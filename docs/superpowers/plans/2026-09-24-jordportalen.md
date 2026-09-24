@@ -16,6 +16,12 @@
 - **SharePoint-site:** `https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard`
 - **Listenavne og kolonnenavne** er låst i `SHAREPOINT-LISTER.md` og må ikke afvige. De er rene ASCII uden æøå; **valgmuligheder** indeholder derimod danske tegn (`Rådgiver`, `Høring`) og skal matche byte for byte.
 - **Komponenter kalder aldrig PnPjs direkte.** Kun services.
+- **Paginering sker med PnPjs' async-iterator, aldrig med `.skip()`.** Paa en
+  liste sætter `_Items.skip(n)` ikke en offset, men `$skiptoken=Paged=TRUE&p_ID=n`
+  — hvilket betyder "start efter element-id n". Sendes en offset ind, og er
+  resultatet sorteret efter andet end Id, bliver sider sprunget over eller
+  gentaget, uden at noget fejler. `_Items` implementerer `Symbol.asyncIterator`,
+  som følger `odata.nextLink` korrekt; det er den eneste rigtige vej.
 - **Deep-links bruger `?sag=<id>`**, aldrig `#sag-<id>` i genererede links.
 - **Alle portal-baserede Fluent-komponenter** (`Dropdown`, `Combobox`, `Dialog`, `Menu`, `Tooltip`, `Popover`) skal have `mountNode` sat, ellers mister de deres styling.
 - **Ingen Microsoft Graph.** Profildata hentes fra SharePoints egne kilder.
