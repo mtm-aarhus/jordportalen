@@ -20,7 +20,7 @@
 - **Alle portal-baserede Fluent-komponenter** (`Dropdown`, `Combobox`, `Dialog`, `Menu`, `Tooltip`, `Popover`) skal have `mountNode` sat, ellers mister de deres styling.
 - **Ingen Microsoft Graph.** Profildata hentes fra SharePoints egne kilder.
 - **Robottens felter skrives aldrig fra frontenden.** Kun `Status`, `AfventerAarsag` og `Ansvarlig` på `P8Ansogninger`.
-- **Versionsnummer bumpes to steder** i `config/package-solution.json` ved hver udrulning: i roden og inde i `solution`.
+- **Versionsnummer bumpes to steder** i `config/package-solution.json` ved hver udrulning: `solution.version` og `solution.features[0].version`. Idéportalens dokumentation kalder det andet sted "roden", men noget rodfelt findes ikke i SPFx-skemaet — verificeret mod Idéportalen, Opgaveportalen og master-dashboardet, som alle har præcis de to felter.
 
 ---
 
@@ -3855,9 +3855,13 @@ Resultatet ligger i `sharepoint/solution/jordportalen.sppkg`.
 
 ## Bump versionen først
 
-I `config/package-solution.json` skal versionen hæves **to steder**: i roden og
-inde i `solution`. Gør man det kun ét sted, udrulles pakken uden at ændre noget,
-og det ligner en cache-fejl.
+I `config/package-solution.json` skal versionen hæves **to steder**:
+`solution.version` og `solution.features[0].version`. Gør man det kun ét sted,
+udrulles pakken uden at ændre noget, og det ligner en cache-fejl.
+
+Bemærk at Idéportalens dokumentation kalder det andet sted "roden". Det er
+upræcist — SPFx-skemaet har intet rodfelt, kun `$schema`, `solution` og `paths`.
+Felterne ligger begge inde i `solution`.
 
 ## Upload
 
@@ -3878,7 +3882,7 @@ Det kræver ingen særlige rettigheder ud over adgang til App Catalog.
 
 - [ ] **Step 3: Bekræft at versionsfelterne står rigtigt**
 
-Åbn `config/package-solution.json` og bekræft at `version` findes både i roden og inde i `solution`, og at `includeClientSideAssets` og `skipFeatureDeployment` er `true` (sat i Task 1).
+Åbn `config/package-solution.json` og bekræft at `version` findes både som `solution.version` og som `solution.features[0].version`, og at `includeClientSideAssets` og `skipFeatureDeployment` er `true` (sat i Task 1).
 
 - [ ] **Step 4: Byg pakken og bekræft at den dannes**
 
