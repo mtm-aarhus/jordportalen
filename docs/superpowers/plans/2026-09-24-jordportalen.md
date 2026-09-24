@@ -1599,7 +1599,11 @@ export class NoteService {
     const r = await hentAlleSider<INote>(async (skip, antal) =>
       this.sp.web.lists
         .getByTitle(LIST_NAMES.NOTER)
-        .items.select('Id,SagId,Tekst,Created,Modified')
+        // Author SKAL udvides. Filtret indeholder 'Author/Id eq N', og uden
+        // expand afviser SharePoint forespoergslen med 400 - hvorved hele
+        // forfatterbeskyttelsen fejler i stedet for at filtrere.
+        .items.select('Id,SagId,Tekst,Created,Modified', 'Author/Id')
+        .expand('Author')
         .filter(noteFilter(sagId, brugerId))
         .orderBy('Created', false)
         .skip(skip)
