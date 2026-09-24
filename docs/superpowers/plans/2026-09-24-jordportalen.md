@@ -982,7 +982,7 @@ export function dashboardFilter(f: IDashboardFilter): string {
 - [ ] **Step 4: Kør testen og bekræft at den passerer**
 
 Run: `npm test -- forespoergsler`
-Expected: PASS, 9 tests.
+Expected: PASS, 10 tests.
 
 - [ ] **Step 5: Commit**
 
