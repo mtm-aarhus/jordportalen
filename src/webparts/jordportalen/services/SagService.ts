@@ -75,7 +75,12 @@ export class SagService {
   // Logger konsollen `ETAG: undefined`, springer `update()` samtidighedstjekket
   // over UDEN at fejle - og saa er ETag-beskyttelsen i Task 10 stille slaaet
   // fra, uden at noget afsloerer det. Er det tilfaeldet, erstat `hentSag`
-  // ovenfor med denne variant, der beder eksplicit om minimalmetadata:
+  // ovenfor med denne variant, der beder eksplicit om minimalmetadata.
+  //
+  // Bemaerk: `on.pre`s parametre skal have eksplicitte typer (`url: string`,
+  // `init: RequestInit`, `result: unknown`) - ellers fejler kompileringen
+  // paa implicit any (`noImplicitAny`), da PnPjs' egen typeinferens ikke
+  // naar ind i callbacken her. Verificeret ved en proeve-kompilering.
   //
   // public async hentSag(id: number): Promise<ISag> {
   //   const item = this.sp.web.lists.getByTitle(LIST_NAMES.SAGER).items.getById(id);
@@ -85,8 +90,11 @@ export class SagService {
   //     .select(SAG_FELTER, ANSVARLIG_UDVID)
   //     .expand('Ansvarlig')
   //     .using((instance) => {
-  //       instance.on.pre(async (url, init, result) => {
-  //         init.headers = { ...init.headers, Accept: 'application/json;odata=minimalmetadata' };
+  //       instance.on.pre(async (url: string, init: RequestInit, result: unknown) => {
+  //         init.headers = {
+  //           ...(init.headers as Record<string, string> | undefined),
+  //           Accept: 'application/json;odata=minimalmetadata',
+  //         };
   //         return [url, init, result];
   //       });
   //       return instance;
@@ -154,6 +162,26 @@ export class SagService {
   }
 
   /**
+   * Kraever en ETag foer en skrivning.
+   *
+   * Kun `hentSag()` saetter `etag` - `hentAlleSager()` goer det bevidst ikke,
+   * for dashboardets oversigtsfelter er ikke nok til en sikker skrivning.
+   * PnPjs' `update()` bruger "*" som IF-Match naar `eTag` er `undefined`, saa
+   * en manglende ETag fejler IKKE i sig selv - den slaar bare
+   * samtidighedstjekket fra uden en lyd. Det er praecis den tavse fejl,
+   * ETag-beskyttelsen findes for at forhindre, saa her fejles der hoejt i
+   * stedet for at stole paa at enhver fremtidig laesevej husker at hente den.
+   */
+  private kraevEtag(sag: ISag): string {
+    if (!sag.etag) {
+      throw new Error(
+        `Sagen mangler en ETag. Hent sagen med hentSag(${sag.Id}) foer den aendres.`
+      );
+    }
+    return sag.etag;
+  }
+
+  /**
    * Skifter status og skriver en logpost.
    *
    * Valideringen sker foer skrivningen, saa en ulovlig kombination aldrig naar
@@ -171,13 +199,14 @@ export class SagService {
     if (fejl) {
       throw new Error(fejl);
     }
+    const etag = this.kraevEtag(sag);
 
     await skrivMedEtag(
       () =>
         this.sp.web.lists
           .getByTitle(LIST_NAMES.SAGER)
           .items.getById(sag.Id)
-          .update({ Status: nyStatus, AfventerAarsag: aarsag ?? null }, sag.etag),
+          .update({ Status: nyStatus, AfventerAarsag: aarsag ?? null }, etag),
       'skifte status'
     );
 
@@ -201,13 +230,14 @@ export class SagService {
     if (sag.AnsvarligId) {
       throw new Error('Sagen er allerede taget.');
     }
+    const etag = this.kraevEtag(sag);
 
     await skrivMedEtag(
       () =>
         this.sp.web.lists
           .getByTitle(LIST_NAMES.SAGER)
           .items.getById(sag.Id)
-          .update({ AnsvarligId: brugerId }, sag.etag),
+          .update({ AnsvarligId: brugerId }, etag),
       'tage sagen'
     );
 
@@ -219,12 +249,14 @@ export class SagService {
   }
 
   public async frigivSag(sag: ISag): Promise<string | undefined> {
+    const etag = this.kraevEtag(sag);
+
     await skrivMedEtag(
       () =>
         this.sp.web.lists
           .getByTitle(LIST_NAMES.SAGER)
           .items.getById(sag.Id)
-          .update({ AnsvarligId: null }, sag.etag),
+          .update({ AnsvarligId: null }, etag),
       'frigive sagen'
     );
 
