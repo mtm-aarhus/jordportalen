@@ -39,19 +39,17 @@ export class SagService {
     const liste = this.sp.web.lists.getByTitle(LIST_NAMES.SAGER);
     const odata = dashboardFilter(filter);
 
-    return hentAlleSider<ISag>(async (skip, antal) => {
-      let forespoergsel = liste.items
-        .select(OVERSIGT_FELTER, ANSVARLIG_UDVID)
-        .expand('Ansvarlig')
-        .orderBy('ModtagetDato', false)
-        .skip(skip)
-        .top(antal);
+    let forespoergsel = liste.items
+      .select(OVERSIGT_FELTER, ANSVARLIG_UDVID)
+      .expand('Ansvarlig')
+      .orderBy('ModtagetDato', false)
+      .top(100);
 
-      if (odata) {
-        forespoergsel = forespoergsel.filter(odata);
-      }
-      return forespoergsel();
-    });
+    if (odata) {
+      forespoergsel = forespoergsel.filter(odata);
+    }
+
+    return hentAlleSider<ISag>(forespoergsel);
   }
 
   /**
@@ -102,37 +100,34 @@ export class SagService {
   // }
 
   public async hentAdresser(uuid: string): Promise<IAdresse[]> {
-    const r = await hentAlleSider<IAdresse>(async (skip, antal) =>
+    const r = await hentAlleSider<IAdresse>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.ADRESSER)
         .items.select('Id,Title,Adresse,Matrikel,LokalitetsNummer')
         .filter(uuidFilter(uuid))
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
 
   public async hentKontakter(uuid: string): Promise<IKontakt[]> {
-    const r = await hentAlleSider<IKontakt>(async (skip, antal) =>
+    const r = await hentAlleSider<IKontakt>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.KONTAKTER)
         .items.select('Id,Title,KontaktType,ErUdfylder,Navn,Firma,CVR,Email,Telefon,Adresse')
         .filter(uuidFilter(uuid))
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
 
   public async hentBilag(uuid: string): Promise<IBilag[]> {
-    const r = await hentAlleSider<IBilag>(async (skip, antal) =>
+    const r = await hentAlleSider<IBilag>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.BILAG)
         .items.select('Id,Title,FilId,Filnavn,FilUrl')
         .filter(uuidFilter(uuid))
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
