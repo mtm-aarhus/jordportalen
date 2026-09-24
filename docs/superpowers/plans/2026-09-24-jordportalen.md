@@ -548,6 +548,15 @@ git commit -m "Statusregler med validering af afventer-aarsag"
 
 ### Task 4: Paginering med synlig afkortning
 
+> **Bemaerk — koden i denne opgave er afloest.** Modulet blev skrevet som angivet
+> herunder, men gennemgangen af Task 8-10 afsloerede at `(skip, antal)`-modellen er
+> forkert mod SharePoint: `_Items.skip(n)` saetter `$skiptoken=Paged=TRUE&p_ID=n`,
+> hvor `n` er et element-id og ikke en offset. Modulet tager nu en
+> `AsyncIterable<T[]>` og bruger PnPjs' egen iterator. Se den faktiske
+> `src/webparts/jordportalen/domaene/paginering.ts` og Global Constraints ovenfor.
+> Koden herunder er bevaret som historik over hvad der blev bygget og hvorfor det
+> blev lavet om.
+
 **Files:**
 - Create: `src/webparts/jordportalen/domaene/paginering.ts`
 - Test: `tests/paginering.test.ts`
@@ -1310,37 +1319,34 @@ export class SagService {
   }
 
   public async hentAdresser(uuid: string): Promise<IAdresse[]> {
-    const r = await hentAlleSider<IAdresse>(async (skip, antal) =>
+    const r = await hentAlleSider<IAdresse>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.ADRESSER)
         .items.select('Id,Title,Adresse,Matrikel,LokalitetsNummer')
         .filter(uuidFilter(uuid))
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
 
   public async hentKontakter(uuid: string): Promise<IKontakt[]> {
-    const r = await hentAlleSider<IKontakt>(async (skip, antal) =>
+    const r = await hentAlleSider<IKontakt>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.KONTAKTER)
         .items.select('Id,Title,KontaktType,ErUdfylder,Navn,Firma,CVR,Email,Telefon,Adresse')
         .filter(uuidFilter(uuid))
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
 
   public async hentBilag(uuid: string): Promise<IBilag[]> {
-    const r = await hentAlleSider<IBilag>(async (skip, antal) =>
+    const r = await hentAlleSider<IBilag>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.BILAG)
         .items.select('Id,Title,FilId,Filnavn,FilUrl')
         .filter(uuidFilter(uuid))
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
@@ -1606,7 +1612,7 @@ export class NoteService {
   public constructor(private readonly sp: SPFI) {}
 
   public async hentMine(sagId: number, brugerId: number): Promise<INote[]> {
-    const r = await hentAlleSider<INote>(async (skip, antal) =>
+    const r = await hentAlleSider<INote>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.NOTER)
         // Author SKAL udvides. Filtret indeholder 'Author/Id eq N', og uden
@@ -1616,8 +1622,7 @@ export class NoteService {
         .expand('Author')
         .filter(noteFilter(sagId, brugerId))
         .orderBy('Created', false)
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
@@ -1661,14 +1666,13 @@ export class OpgaveService {
   ) {}
 
   public async hentForSag(sagId: number): Promise<IOpgave[]> {
-    const r = await hentAlleSider<IOpgave>(async (skip, antal) =>
+    const r = await hentAlleSider<IOpgave>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.OPGAVER)
         .items.select('Id,Title,SagId,Udfoert,Created')
         .filter(sagIdFilter(sagId))
         .orderBy('Created', true)
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
@@ -1731,14 +1735,13 @@ export class LinkService {
   ) {}
 
   public async hentForSag(sagId: number): Promise<ILink[]> {
-    const r = await hentAlleSider<ILink>(async (skip, antal) =>
+    const r = await hentAlleSider<ILink>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.LINKS)
         .items.select('Id,Title,SagId,Url')
         .filter(sagIdFilter(sagId))
         .orderBy('Created', true)
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
@@ -1829,14 +1832,13 @@ export class DokumentService {
       Modified: string;
       FileLeafRef: string;
       FileRef: string;
-    }>(async (skip, antal) =>
+    }>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.DOKUMENTER)
         .items.select('Id,SagId,Modified,FileLeafRef,FileRef')
         .filter(sagIdFilter(sagId))
         .orderBy('Modified', false)
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
 
     return raa.elementer.map((f) => ({
