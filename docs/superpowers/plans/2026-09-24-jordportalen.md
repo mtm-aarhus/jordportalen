@@ -97,9 +97,13 @@ Generatoren opretter i den eksisterende mappe. Eksisterende filer (`docs/`, `scr
 Run: `npm install && npm run build`
 Expected: bygger uden fejl. Tager nogle minutter første gang.
 
-- [ ] **Step 3: Installer testafhængigheder**
+- [ ] **Step 3: Installer afhængigheder**
+
+PnPjs foelger ikke med SPFx-generatoren og skal installeres eksplicit. Uden den
+kan intet i `services/` kompilere.
 
 ```bash
+npm install @pnp/sp@4
 npm install --save-dev jest@29 ts-jest@29 @types/jest@29
 ```
 
