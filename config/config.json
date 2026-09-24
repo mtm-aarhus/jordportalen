@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "jordportalen-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/jordportalen/JordportalenWebPart.js",
+          "manifest": "./src/webparts/jordportalen/JordportalenWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "JordportalenWebPartStrings": "lib/webparts/jordportalen/loc/{locale}.js"
+  }
+}
