@@ -17,12 +17,29 @@ const TILLADTE_SKIFT: Record<SagStatus, SagStatus[]> = {
   'Afvist': [],
 };
 
+/**
+ * Slaar de tilladte overgange op for en status.
+ *
+ * Status kommer fra en SharePoint Choice-kolonne. Aendrer en administrator
+ * eller tilfoejer et valg, kan `fra` vaere noget der ligger uden for
+ * TypeScript-unionen paa kaeretidspunktet. Et ukendt status-navn skal give
+ * "ingen overgange tilladt", ikke en TypeError fra et manglende opslag.
+ */
+function tilladteOvergange(fra: SagStatus): SagStatus[] | undefined {
+  return TILLADTE_SKIFT[fra];
+}
+
 export function maaSkifte(fra: SagStatus, til: SagStatus): boolean {
-  return TILLADTE_SKIFT[fra].indexOf(til) !== -1;
+  const tilladte = tilladteOvergange(fra);
+  return tilladte !== undefined && tilladte.indexOf(til) !== -1;
 }
 
 export function naeste(fra: SagStatus): SagStatus[] {
-  return TILLADTE_SKIFT[fra];
+  const tilladte = tilladteOvergange(fra);
+  // Kopi, saa en kalder (fx en dropdown der tilfoejer en placeholder) ikke
+  // kan mutere selve opslagstabellen og dermed oedelaegge den for resten af
+  // sessionen.
+  return tilladte !== undefined ? tilladte.slice() : [];
 }
 
 /**

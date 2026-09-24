@@ -1,4 +1,5 @@
 import { maaSkifte, naeste, validerStatusskift } from '../src/webparts/jordportalen/domaene/statusregler';
+import { SagStatus } from '../src/webparts/jordportalen/domaene/typer';
 
 describe('statusregler', () => {
   it('tillader den normale vej gennem sagsgangen', () => {
@@ -29,6 +30,22 @@ describe('statusregler', () => {
   it('opremser de mulige naeste statusser', () => {
     expect(naeste('Ny')).toEqual(['Under behandling', 'Afgjort', 'Afvist']);
     expect(naeste('Afgjort')).toEqual([]);
+  });
+
+  it('lader ikke en kalder odelaegge opslagstabellen ved at mutere det returnerede array', () => {
+    const foerste = naeste('Ny');
+    foerste.push('Afventer');
+    foerste.sort();
+
+    // Et helt nyt kald skal stadig give den oprindelige, upaavirkede raekkefoelge.
+    expect(naeste('Ny')).toEqual(['Under behandling', 'Afgjort', 'Afvist']);
+    expect(maaSkifte('Ny', 'Under behandling')).toBe(true);
+  });
+
+  it('degraderer til "ingen overgange" for en status uden for unionen, i stedet for at kaste', () => {
+    const ukendt = 'Lukket' as unknown as SagStatus;
+    expect(maaSkifte(ukendt, 'Ny')).toBe(false);
+    expect(naeste(ukendt)).toEqual([]);
   });
 
   it('kraever en aarsag naar der skiftes til Afventer', () => {

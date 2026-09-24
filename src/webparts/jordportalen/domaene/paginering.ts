@@ -25,6 +25,16 @@ export async function hentAlleSider<T>(
   sideStoerrelse: number = STANDARD_SIDESTOERRELSE,
   maksAntal: number = STANDARD_MAKSANTAL
 ): Promise<ISideResultat<T>> {
+  // Uden dette tjek bliver `antal` 0 naar sideStoerrelse (eller maksAntal) er
+  // 0 eller negativ, og "en side der ikke er fuld" udloeser aldrig - loekken
+  // koerer for evigt og fanen dor.
+  if (sideStoerrelse <= 0) {
+    throw new Error('sideStoerrelse skal vaere et positivt tal.');
+  }
+  if (maksAntal <= 0) {
+    throw new Error('maksAntal skal vaere et positivt tal.');
+  }
+
   const elementer: T[] = [];
 
   while (elementer.length < maksAntal) {

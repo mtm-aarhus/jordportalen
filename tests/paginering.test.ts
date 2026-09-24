@@ -47,4 +47,18 @@ describe('hentAlleSider', () => {
     expect(r.elementer).toHaveLength(0);
     expect(r.afkortet).toBe(false);
   });
+
+  it('kaster en klar fejl ved en ikke-positiv sideStoerrelse i stedet for at loebe uendeligt', async () => {
+    await expect(hentAlleSider(falskHenter(10), 0, 5000)).rejects.toThrow(
+      'sideStoerrelse skal vaere et positivt tal.'
+    );
+    await expect(hentAlleSider(falskHenter(10), -1, 5000)).rejects.toThrow(Error);
+  });
+
+  it('kaster en klar fejl ved en ikke-positiv maksAntal i stedet for at loebe uendeligt', async () => {
+    await expect(hentAlleSider(falskHenter(10), 100, 0)).rejects.toThrow(
+      'maksAntal skal vaere et positivt tal.'
+    );
+    await expect(hentAlleSider(falskHenter(10), 100, -1)).rejects.toThrow(Error);
+  });
 });
