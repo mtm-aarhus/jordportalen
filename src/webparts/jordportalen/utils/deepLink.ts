@@ -4,7 +4,7 @@
  * Formatet er ?sag=<id>, ikke #sag-<id>. Et hash i den INITIELLE URL crasher
  * SharePoints eget side-bootstrap (sp-pages-assembly) ved koldt sideload -
  * altsaa netop naar nogen aabner et link fra en mail, foer webparten overhovedet
- * er mountet. Idéportalen har lært det; Opgaveportalen bruger stadig hash.
+ * er mountet. Idéportalen har laert det; Opgaveportalen bruger stadig hash.
  *
  * Gamle hash-links parses fortsat, saa allerede udsendte mails virker, men
  * genereres aldrig.
