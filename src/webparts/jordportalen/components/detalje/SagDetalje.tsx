@@ -25,6 +25,10 @@ import { AnsvarligKort } from './AnsvarligKort';
 import { StatusPanel } from './StatusPanel';
 import { KommentarPanel } from './KommentarPanel';
 import { NoterPanel } from './NoterPanel';
+import { OpgavePanel } from './OpgavePanel';
+import { DokumentPanel } from './DokumentPanel';
+import { LinkPanel } from './LinkPanel';
+import { HistorikPanel } from './HistorikPanel';
 
 export interface ITjenester {
   sag: SagService;
@@ -223,6 +227,25 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
               noteService={tjenester.note}
               onOpdateret={() => opdater('noter')}
             />
+            <OpgavePanel
+              sagId={sagId}
+              opgaver={data.opgaver}
+              opgaveService={tjenester.opgave}
+              onOpdateret={() => opdater('opgaver')}
+            />
+            <DokumentPanel
+              sagId={sagId}
+              dokumenter={data.dokumenter}
+              dokumentService={tjenester.dokument}
+              onOpdateret={() => opdater('dokumenter')}
+            />
+            <LinkPanel
+              sagId={sagId}
+              links={data.links}
+              linkService={tjenester.link}
+              onOpdateret={() => opdater('links')}
+            />
+            <HistorikPanel logposter={data.logposter} />
           </div>
         </div>
       </div>
