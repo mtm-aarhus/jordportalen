@@ -4,6 +4,7 @@ import { FluentProvider, webLightTheme, Spinner, MessageBar } from '@fluentui/re
 import { IJordportalenProps } from './IJordportalenProps';
 import { MountNodeProvider } from './faelles/MountNode';
 import { Dashboard } from './dashboard/Dashboard';
+import { SagDetalje } from './detalje/SagDetalje';
 import { byggSagLink, parseSagId } from '../utils/deepLink';
 import { LogService } from '../services/LogService';
 import { SagService } from '../services/SagService';
@@ -60,7 +61,12 @@ const Jordportalen: React.FunctionComponent<IJordportalenProps> = ({ sp, sideUrl
             {valgtSagId === undefined ? (
               <Dashboard sag={tjenester.sag} brugerId={brugerId} onVaelgSag={vaelgSag} />
             ) : (
-              <p>Detaljeside for sag {valgtSagId} — indsættes i Task 16.</p>
+              <SagDetalje
+                sagId={valgtSagId}
+                tjenester={tjenester}
+                brugerId={brugerId}
+                onTilbage={() => vaelgSag(undefined)}
+              />
             )}
           </div>
         )}
