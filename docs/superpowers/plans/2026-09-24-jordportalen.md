@@ -2108,7 +2108,10 @@ export default class JordportalenWebPart extends BaseClientSideWebPart<IJordport
   public render(): void {
     const element = React.createElement<IJordportalenProps>(Jordportalen, {
       sp: this._sp,
-      sideUrl: this.context.pageContext.web.absoluteUrl + window.location.pathname,
+      // origin, ikke web.absoluteUrl: sidstnaevnte indeholder allerede site-stien,
+      // og pathname goer det ogsaa. Sammensat gav de /sites/jord/sites/jord/...
+      // og dermed 404 paa hvert eneste deep-link.
+      sideUrl: window.location.origin + window.location.pathname,
     });
     ReactDom.render(element, this.domElement);
   }
