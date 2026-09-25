@@ -15,8 +15,8 @@ export interface IAnsvarligKortProps {
   sag: ISag;
   profil?: IProfil;
   brugerId: number;
-  onTag: () => Promise<void>;
-  onFrigiv: () => Promise<void>;
+  onTag: () => Promise<string | undefined>;
+  onFrigiv: () => Promise<string | undefined>;
 }
 
 export const AnsvarligKort: React.FunctionComponent<IAnsvarligKortProps> = ({
@@ -28,15 +28,17 @@ export const AnsvarligKort: React.FunctionComponent<IAnsvarligKortProps> = ({
 }) => {
   const [arbejder, setArbejder] = React.useState(false);
   const [fejl, setFejl] = React.useState<string | undefined>(undefined);
+  const [advarsel, setAdvarsel] = React.useState<string | undefined>(undefined);
 
   const erMin = sag.AnsvarligId === brugerId;
   const erLedig = !sag.AnsvarligId;
 
-  const udfoer = async (handling: () => Promise<void>): Promise<void> => {
+  const udfoer = async (handling: () => Promise<string | undefined>): Promise<void> => {
     setArbejder(true);
     setFejl(undefined);
+    setAdvarsel(undefined);
     try {
-      await handling();
+      setAdvarsel(await handling());
     } catch (e) {
       setFejl((e as Error).message);
     } finally {
@@ -49,6 +51,7 @@ export const AnsvarligKort: React.FunctionComponent<IAnsvarligKortProps> = ({
       <Title3>Ansvarlig</Title3>
 
       {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
+      {advarsel && <MessageBar intent="warning">{advarsel}</MessageBar>}
 
       {erLedig ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalM }}>
