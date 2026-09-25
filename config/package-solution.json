@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "jordportalen-client-side-solution",
+    "id": "105e2bf8-0f61-46ce-92cc-af5824fce1cb",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.23.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "jordportalen description"
+      },
+      "longDescription": {
+        "default": "jordportalen description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "jordportalen Feature",
+        "description": "The feature that activates elements of the jordportalen solution.",
+        "id": "a52eee56-a117-4478-a0b2-bd0af74083b6",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/jordportalen.sppkg"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Samme begrundelse som i tsconfig.json: `lib` erstatter frem for at
+    // flette. Tilfoejer "es2018.asynciterable" (Symbol.asyncIterator, som
+    // paginering.ts afhaenger af), "es2017.object" (Object.values, brugt
+    // i tests/typer.test.ts) og "es2022.error" (Error-konstruktoerens
+    // `cause`-option, brugt i tests/samtidighed.test.ts) oven paa SPFx-basens
+    // liste.
+    "lib": [
+      "dom",
+      "es5",
+      "es2015.core",
+      "es2015.collection",
+      "es2015.iterable",
+      "es2015.promise",
+      "es2015.proxy",
+      "es2018.asynciterable",
+      "es2017.object",
+      "es2022.error"
+    ]
+  }
+}

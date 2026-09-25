@@ -74,7 +74,7 @@ Her er hvad der sker, og hvad der kan gøres.
 
 ```
 AADSTS700016: Application with identifier '31359c7f-bd7e-475c-86db-fdb8c937548e'
-was not found in the directory '7d66e379-7f94-41f8-a2ba-fc9740f2faa0'
+was not found in the directory '<tenant-id>'
 ```
 
 PnP PowerShell 1.x bruger Microsofts fælles app "PnP Management Shell". Den er ikke godkendt
@@ -118,7 +118,7 @@ i dem. Er den sat op med `Sites.Selected`, kan den mangle adgang til netop dette
 til en global administrator — det godkender PnP-appen i tenanten én gang for alle:
 
 ```
-https://login.microsoftonline.com/7d66e379-7f94-41f8-a2ba-fc9740f2faa0/adminconsent?client_id=31359c7f-bd7e-475c-86db-fdb8c937548e
+https://login.microsoftonline.com/aarhuskommune.dk/adminconsent?client_id=31359c7f-bd7e-475c-86db-fdb8c937548e
 ```
 
 Er du selv administrator, kan du i stedet køre:
