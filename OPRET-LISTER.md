@@ -74,7 +74,7 @@ Her er hvad der sker, og hvad der kan gøres.
 
 ```
 AADSTS700016: Application with identifier '31359c7f-bd7e-475c-86db-fdb8c937548e'
-was not found in the directory '7d66e379-7f94-41f8-a2ba-fc9740f2faa0'
+was not found in the directory '<tenant-id>'
 ```
 
 PnP PowerShell 1.x bruger Microsofts fælles app "PnP Management Shell". Den er ikke godkendt
