@@ -1,44 +1,72 @@
 import * as React from 'react';
-import styles from './Jordportalen.module.scss';
-import type { IJordportalenProps } from './IJordportalenProps';
-import { escape } from '@microsoft/sp-lodash-subset';
-import welcomeDark from '../assets/welcome-dark.png';
-import welcomeLight from '../assets/welcome-light.png';
+import { FluentProvider, webLightTheme, Spinner, MessageBar } from '@fluentui/react-components';
 
-export default class Jordportalen extends React.Component<IJordportalenProps> {
-  public render(): React.ReactElement<IJordportalenProps> {
-    const {
-      description,
-      isDarkTheme,
-      environmentMessage,
-      userDisplayName
-    } = this.props;
+import { IJordportalenProps } from './IJordportalenProps';
+import { MountNodeProvider } from './faelles/MountNode';
+import { Dashboard } from './dashboard/Dashboard';
+import { byggSagLink, parseSagId } from '../utils/deepLink';
+import { LogService } from '../services/LogService';
+import { SagService } from '../services/SagService';
+import { NoteService } from '../services/NoteService';
+import { OpgaveService } from '../services/OpgaveService';
+import { LinkService } from '../services/LinkService';
+import { DokumentService } from '../services/DokumentService';
+import { ProfilService } from '../services/ProfilService';
 
-    return (
-      <section className={`${styles.jordportalen}`}>
-        <div className={styles.welcome}>
-          <img alt="" src={isDarkTheme ? welcomeDark : welcomeLight} className={styles.welcomeImage} />
-          <h2>Well done, {escape(userDisplayName)}!</h2>
-          <div>{environmentMessage}</div>
-          <div>Web part property value: <strong>{escape(description)}</strong></div>
-        </div>
-        <div>
-          <h3>Welcome to SharePoint Framework!</h3>
-          <p>
-            The SharePoint Framework (SPFx) is a extensibility model for Microsoft Viva, Microsoft Teams and SharePoint. It&#39;s the easiest way to extend Microsoft 365 with automatic Single Sign On, automatic hosting and industry standard tooling.
-          </p>
-          <h4>Learn more about SPFx development:</h4>
-          <ul className={styles.links}>
-            <li><a href="https://aka.ms/spfx" target="_blank" rel="noreferrer">SharePoint Framework Overview</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-graph" target="_blank" rel="noreferrer">Use Microsoft Graph in your solution</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-teams" target="_blank" rel="noreferrer">Build for Microsoft Teams using SharePoint Framework</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-viva" target="_blank" rel="noreferrer">Build for Microsoft Viva Connections using SharePoint Framework</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-store" target="_blank" rel="noreferrer">Publish SharePoint Framework applications to the marketplace</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-api" target="_blank" rel="noreferrer">SharePoint Framework API reference</a></li>
-            <li><a href="https://aka.ms/m365pnp" target="_blank" rel="noreferrer">Microsoft 365 Developer Community</a></li>
-          </ul>
-        </div>
-      </section>
-    );
-  }
-}
+const Jordportalen: React.FunctionComponent<IJordportalenProps> = ({ sp, sideUrl }) => {
+  const tjenester = React.useMemo(() => {
+    const log = new LogService(sp);
+    return {
+      log,
+      sag: new SagService(sp, log),
+      note: new NoteService(sp),
+      opgave: new OpgaveService(sp, log),
+      link: new LinkService(sp, log),
+      dokument: new DokumentService(sp, log),
+      profil: new ProfilService(sp),
+    };
+  }, [sp]);
+
+  const [valgtSagId, setValgtSagId] = React.useState<number | undefined>(() =>
+    parseSagId(window.location.href)
+  );
+  const [brugerId, setBrugerId] = React.useState<number | undefined>(undefined);
+  const [fejl, setFejl] = React.useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    tjenester.profil
+      .nuvaerendeBrugerId()
+      .then(setBrugerId)
+      .catch((e: Error) => setFejl(e.message));
+  }, [tjenester]);
+
+  // Holder URL'en i takt med valget, saa en sag kan bogmaerkes og deles.
+  const vaelgSag = React.useCallback(
+    (id: number | undefined) => {
+      setValgtSagId(id);
+      const url = id ? byggSagLink(sideUrl, id) : sideUrl;
+      window.history.replaceState({}, '', url);
+    },
+    [sideUrl]
+  );
+
+  return (
+    <FluentProvider theme={webLightTheme}>
+      <MountNodeProvider>
+        {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
+        {brugerId === undefined && !fejl && <Spinner label="Indlæser..." />}
+        {brugerId !== undefined && (
+          <div>
+            {valgtSagId === undefined ? (
+              <Dashboard sag={tjenester.sag} brugerId={brugerId} onVaelgSag={vaelgSag} />
+            ) : (
+              <p>Detaljeside for sag {valgtSagId} — indsættes i Task 16.</p>
+            )}
+          </div>
+        )}
+      </MountNodeProvider>
+    </FluentProvider>
+  );
+};
+
+export default Jordportalen;

@@ -1,6 +1,7 @@
+import { SPFI } from '@pnp/sp';
+
 export interface IJordportalenProps {
-  description: string;
-  isDarkTheme: boolean;
-  environmentMessage: string;
-  userDisplayName: string;
+  sp: SPFI;
+  /** Sidens egen URL uden parametre. Bruges til at bygge deep-links. */
+  sideUrl: string;
 }
