@@ -1,0 +1,21 @@
+{
+  "extends": "./node_modules/@microsoft/spfx-web-build-rig/profiles/default/tsconfig-base.json",
+  "compilerOptions": {
+    // `lib` erstatter frem for at flette, saa hele SPFx-basens liste skal
+    // gentages her. "es2018.asynciterable" er tilfoejet for PnPjs'
+    // Symbol.asyncIterator, som pagineringen afhaenger af.
+    // "es2022.error" er tilfoejet for Error-konstruktoerens `cause`-option,
+    // som oversaetFejl bruger til at bevare den oprindelige fejl til konsollen.
+    "lib": [
+      "dom",
+      "es5",
+      "es2015.core",
+      "es2015.collection",
+      "es2015.iterable",
+      "es2015.promise",
+      "es2015.proxy",
+      "es2018.asynciterable",
+      "es2022.error"
+    ]
+  }
+}

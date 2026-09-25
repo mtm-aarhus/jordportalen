@@ -16,11 +16,17 @@
 - **SharePoint-site:** `https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard`
 - **Listenavne og kolonnenavne** er låst i `SHAREPOINT-LISTER.md` og må ikke afvige. De er rene ASCII uden æøå; **valgmuligheder** indeholder derimod danske tegn (`Rådgiver`, `Høring`) og skal matche byte for byte.
 - **Komponenter kalder aldrig PnPjs direkte.** Kun services.
+- **Paginering sker med PnPjs' async-iterator, aldrig med `.skip()`.** Paa en
+  liste sætter `_Items.skip(n)` ikke en offset, men `$skiptoken=Paged=TRUE&p_ID=n`
+  — hvilket betyder "start efter element-id n". Sendes en offset ind, og er
+  resultatet sorteret efter andet end Id, bliver sider sprunget over eller
+  gentaget, uden at noget fejler. `_Items` implementerer `Symbol.asyncIterator`,
+  som følger `odata.nextLink` korrekt; det er den eneste rigtige vej.
 - **Deep-links bruger `?sag=<id>`**, aldrig `#sag-<id>` i genererede links.
 - **Alle portal-baserede Fluent-komponenter** (`Dropdown`, `Combobox`, `Dialog`, `Menu`, `Tooltip`, `Popover`) skal have `mountNode` sat, ellers mister de deres styling.
 - **Ingen Microsoft Graph.** Profildata hentes fra SharePoints egne kilder.
 - **Robottens felter skrives aldrig fra frontenden.** Kun `Status`, `AfventerAarsag` og `Ansvarlig` på `P8Ansogninger`.
-- **Versionsnummer bumpes to steder** i `config/package-solution.json` ved hver udrulning: i roden og inde i `solution`.
+- **Versionsnummer bumpes to steder** i `config/package-solution.json` ved hver udrulning: `solution.version` og `solution.features[0].version`. Idéportalens dokumentation kalder det andet sted "roden", men noget rodfelt findes ikke i SPFx-skemaet — verificeret mod Idéportalen, Opgaveportalen og master-dashboardet, som alle har præcis de to felter.
 
 ---
 
@@ -97,11 +103,18 @@ Generatoren opretter i den eksisterende mappe. Eksisterende filer (`docs/`, `scr
 Run: `npm install && npm run build`
 Expected: bygger uden fejl. Tager nogle minutter første gang.
 
-- [ ] **Step 3: Installer testafhængigheder**
+- [ ] **Step 3: Installer afhængigheder**
+
+PnPjs foelger ikke med SPFx-generatoren og skal installeres eksplicit. Uden den
+kan intet i `services/` kompilere.
 
 ```bash
+npm install @pnp/sp@4 @fluentui/react-components@9
 npm install --save-dev jest@29 ts-jest@29 @types/jest@29
 ```
+
+Generatoren leverer Fluent UI v8 (`@fluentui/react`). Hele loesningen bygges paa
+v9, som er en separat pakke og skal installeres eksplicit.
 
 - [ ] **Step 4: Opret jest.config.js**
 
@@ -537,6 +550,15 @@ git commit -m "Statusregler med validering af afventer-aarsag"
 ---
 
 ### Task 4: Paginering med synlig afkortning
+
+> **Bemaerk — koden i denne opgave er afloest.** Modulet blev skrevet som angivet
+> herunder, men gennemgangen af Task 8-10 afsloerede at `(skip, antal)`-modellen er
+> forkert mod SharePoint: `_Items.skip(n)` saetter `$skiptoken=Paged=TRUE&p_ID=n`,
+> hvor `n` er et element-id og ikke en offset. Modulet tager nu en
+> `AsyncIterable<T[]>` og bruger PnPjs' egen iterator. Se den faktiske
+> `src/webparts/jordportalen/domaene/paginering.ts` og Global Constraints ovenfor.
+> Koden herunder er bevaret som historik over hvad der blev bygget og hvorfor det
+> blev lavet om.
 
 **Files:**
 - Create: `src/webparts/jordportalen/domaene/paginering.ts`
@@ -982,7 +1004,7 @@ export function dashboardFilter(f: IDashboardFilter): string {
 - [ ] **Step 4: Kør testen og bekræft at den passerer**
 
 Run: `npm test -- forespoergsler`
-Expected: PASS, 9 tests.
+Expected: PASS, 10 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -1167,14 +1189,13 @@ export class LogService {
   public async hentForSag(sagId: number): Promise<ILogPost[]> {
     const liste = this.sp.web.lists.getByTitle(LIST_NAMES.LOG);
 
-    const resultat = await hentAlleSider<ILogPost>(async (skip, antal) =>
+    const resultat = await hentAlleSider<ILogPost>(
       liste.items
         .select(FELTER, UDVID_FELTER)
         .expand(UDVID)
         .filter(sagIdFilter(sagId))
         .orderBy('Created', false)
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
 
     return resultat.elementer;
@@ -1267,19 +1288,17 @@ export class SagService {
     const liste = this.sp.web.lists.getByTitle(LIST_NAMES.SAGER);
     const odata = dashboardFilter(filter);
 
-    return hentAlleSider<ISag>(async (skip, antal) => {
-      let forespoergsel = liste.items
-        .select(OVERSIGT_FELTER, ANSVARLIG_UDVID)
-        .expand('Ansvarlig')
-        .orderBy('ModtagetDato', false)
-        .skip(skip)
-        .top(antal);
+    let forespoergsel = liste.items
+      .select(OVERSIGT_FELTER, ANSVARLIG_UDVID)
+      .expand('Ansvarlig')
+      .orderBy('ModtagetDato', false)
+      .top(100);
 
-      if (odata) {
-        forespoergsel = forespoergsel.filter(odata);
-      }
-      return forespoergsel();
-    });
+    if (odata) {
+      forespoergsel = forespoergsel.filter(odata);
+    }
+
+    return hentAlleSider<ISag>(forespoergsel);
   }
 
   /**
@@ -1300,37 +1319,34 @@ export class SagService {
   }
 
   public async hentAdresser(uuid: string): Promise<IAdresse[]> {
-    const r = await hentAlleSider<IAdresse>(async (skip, antal) =>
+    const r = await hentAlleSider<IAdresse>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.ADRESSER)
         .items.select('Id,Title,Adresse,Matrikel,LokalitetsNummer')
         .filter(uuidFilter(uuid))
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
 
   public async hentKontakter(uuid: string): Promise<IKontakt[]> {
-    const r = await hentAlleSider<IKontakt>(async (skip, antal) =>
+    const r = await hentAlleSider<IKontakt>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.KONTAKTER)
         .items.select('Id,Title,KontaktType,ErUdfylder,Navn,Firma,CVR,Email,Telefon,Adresse')
         .filter(uuidFilter(uuid))
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
 
   public async hentBilag(uuid: string): Promise<IBilag[]> {
-    const r = await hentAlleSider<IBilag>(async (skip, antal) =>
+    const r = await hentAlleSider<IBilag>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.BILAG)
         .items.select('Id,Title,FilId,Filnavn,FilUrl')
         .filter(uuidFilter(uuid))
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
@@ -1596,14 +1612,17 @@ export class NoteService {
   public constructor(private readonly sp: SPFI) {}
 
   public async hentMine(sagId: number, brugerId: number): Promise<INote[]> {
-    const r = await hentAlleSider<INote>(async (skip, antal) =>
+    const r = await hentAlleSider<INote>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.NOTER)
-        .items.select('Id,SagId,Tekst,Created,Modified')
+        // Author SKAL udvides. Filtret indeholder 'Author/Id eq N', og uden
+        // expand afviser SharePoint forespoergslen med 400 - hvorved hele
+        // forfatterbeskyttelsen fejler i stedet for at filtrere.
+        .items.select('Id,SagId,Tekst,Created,Modified', 'Author/Id')
+        .expand('Author')
         .filter(noteFilter(sagId, brugerId))
         .orderBy('Created', false)
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
@@ -1647,14 +1666,13 @@ export class OpgaveService {
   ) {}
 
   public async hentForSag(sagId: number): Promise<IOpgave[]> {
-    const r = await hentAlleSider<IOpgave>(async (skip, antal) =>
+    const r = await hentAlleSider<IOpgave>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.OPGAVER)
         .items.select('Id,Title,SagId,Udfoert,Created')
         .filter(sagIdFilter(sagId))
         .orderBy('Created', true)
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
@@ -1717,14 +1735,13 @@ export class LinkService {
   ) {}
 
   public async hentForSag(sagId: number): Promise<ILink[]> {
-    const r = await hentAlleSider<ILink>(async (skip, antal) =>
+    const r = await hentAlleSider<ILink>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.LINKS)
         .items.select('Id,Title,SagId,Url')
         .filter(sagIdFilter(sagId))
         .orderBy('Created', true)
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
     return r.elementer;
   }
@@ -1815,14 +1832,13 @@ export class DokumentService {
       Modified: string;
       FileLeafRef: string;
       FileRef: string;
-    }>(async (skip, antal) =>
+    }>(
       this.sp.web.lists
         .getByTitle(LIST_NAMES.DOKUMENTER)
         .items.select('Id,SagId,Modified,FileLeafRef,FileRef')
         .filter(sagIdFilter(sagId))
         .orderBy('Modified', false)
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
 
     return raa.elementer.map((f) => ({
@@ -2089,7 +2105,10 @@ export default class JordportalenWebPart extends BaseClientSideWebPart<IJordport
   public render(): void {
     const element = React.createElement<IJordportalenProps>(Jordportalen, {
       sp: this._sp,
-      sideUrl: this.context.pageContext.web.absoluteUrl + window.location.pathname,
+      // origin, ikke web.absoluteUrl: sidstnaevnte indeholder allerede site-stien,
+      // og pathname goer det ogsaa. Sammensat gav de /sites/jord/sites/jord/...
+      // og dermed 404 paa hvert eneste deep-link.
+      sideUrl: window.location.origin + window.location.pathname,
     });
     ReactDom.render(element, this.domElement);
   }
@@ -3855,9 +3874,13 @@ Resultatet ligger i `sharepoint/solution/jordportalen.sppkg`.
 
 ## Bump versionen først
 
-I `config/package-solution.json` skal versionen hæves **to steder**: i roden og
-inde i `solution`. Gør man det kun ét sted, udrulles pakken uden at ændre noget,
-og det ligner en cache-fejl.
+I `config/package-solution.json` skal versionen hæves **to steder**:
+`solution.version` og `solution.features[0].version`. Gør man det kun ét sted,
+udrulles pakken uden at ændre noget, og det ligner en cache-fejl.
+
+Bemærk at Idéportalens dokumentation kalder det andet sted "roden". Det er
+upræcist — SPFx-skemaet har intet rodfelt, kun `$schema`, `solution` og `paths`.
+Felterne ligger begge inde i `solution`.
 
 ## Upload
 
@@ -3878,7 +3901,7 @@ Det kræver ingen særlige rettigheder ud over adgang til App Catalog.
 
 - [ ] **Step 3: Bekræft at versionsfelterne står rigtigt**
 
-Åbn `config/package-solution.json` og bekræft at `version` findes både i roden og inde i `solution`, og at `includeClientSideAssets` og `skipFeatureDeployment` er `true` (sat i Task 1).
+Åbn `config/package-solution.json` og bekræft at `version` findes både som `solution.version` og som `solution.features[0].version`, og at `includeClientSideAssets` og `skipFeatureDeployment` er `true` (sat i Task 1).
 
 - [ ] **Step 4: Byg pakken og bekræft at den dannes**
 
