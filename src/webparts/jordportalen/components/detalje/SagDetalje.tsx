@@ -191,7 +191,7 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
             profil={data.ansvarligProfil}
             brugerId={brugerId}
             onTag={() => tjenester.sag.tagSag(data.sag, brugerId)}
-            onFrigiv={() => tjenester.sag.frigivSag(data.sag)}
+            onFrigiv={() => tjenester.sag.frigivSag(data.sag, brugerId)}
             onOpdateret={hentAlt}
           />
           <div style={{ height: tokens.spacingVerticalM }} />

@@ -6,6 +6,7 @@ import '@pnp/sp/items';
 import { hentAlleSider } from '../domaene/paginering';
 import { sagIdFilter } from '../domaene/forespoergsler';
 import { oversaetFejl } from '../domaene/samtidighed';
+import { sikkerUrl } from '../domaene/sikkerhed';
 import { ILink, LIST_NAMES } from '../domaene/typer';
 import { LogService } from './LogService';
 
@@ -29,11 +30,19 @@ export class LinkService {
   }
 
   public async tilfoej(sagId: number, etiket: string, url: string): Promise<void> {
+    // Samme tjek som render-siderne bruger til at afvise et javascript:-link -
+    // her afvises det foer det overhovedet naar listen, saa det ikke ligger og
+    // venter paa en anden sagsbehandlers klik.
+    const sikker = sikkerUrl(url);
+    if (!sikker) {
+      throw new Error('Linket skal starte med http:// eller https://.');
+    }
+
     try {
       await this.sp.web.lists.getByTitle(LIST_NAMES.LINKS).items.add({
         Title: etiket,
         SagId: sagId,
-        Url: { Url: url, Description: etiket },
+        Url: { Url: sikker, Description: etiket },
       });
     } catch (fejl) {
       throw oversaetFejl(fejl, 'tilføje linket');

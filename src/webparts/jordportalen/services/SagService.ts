@@ -248,7 +248,19 @@ export class SagService {
     });
   }
 
-  public async frigivSag(sag: ISag): Promise<string | undefined> {
+  /**
+   * Frigiver sagen.
+   *
+   * `tagSag` tjekker at sagen er ledig, foer den tages. Frigivelse har
+   * tilsvarende behov for en vagt: uden den kunne en fremtidig kalder (eller
+   * en fremtidig UI-aendring) frigive en sag, den ikke selv har - i dag er
+   * det kun `erMin`-gatingen i UI'et, der forhindrer det, og den er bevidst
+   * ikke en autorisationsgraense.
+   */
+  public async frigivSag(sag: ISag, brugerId: number): Promise<string | undefined> {
+    if (sag.AnsvarligId !== brugerId) {
+      throw new Error('Du kan kun frigive en sag, du selv har taget.');
+    }
     const etag = this.kraevEtag(sag);
 
     await skrivMedEtag(

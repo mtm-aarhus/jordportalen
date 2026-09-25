@@ -60,7 +60,16 @@ export function oversaetFejl(fejl: unknown, beskrivelse: string): Error {
   if (kode === 403) {
     return new AdgangsFejl(`Du har ikke rettigheder til at ${beskrivelse}.`);
   }
-  return fejl as Error;
+
+  // Alt andet - typisk en HttpRequestError fra PnPjs - rendres direkte i en
+  // MessageBar af de kaldende paneler. Den fulde fejl indeholder request-URL,
+  // svarteksten og SharePoints korrelations-id, som ikke skal vises for en
+  // bruger der måske deler skærm. Beskeden erstattes, men originalen følger
+  // med som `cause`, saa den stadig kan ses i konsollen ved fejlsoegning.
+  return new Error(
+    `Der opstod en fejl, da du forsøgte at ${beskrivelse}. Prøv igen, eller kontakt IT-support hvis problemet fortsætter.`,
+    { cause: fejl }
+  );
 }
 
 /**

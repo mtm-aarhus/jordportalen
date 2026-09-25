@@ -44,11 +44,21 @@ describe('skrivMedEtag', () => {
     }
   });
 
-  it('sender andre fejl videre uroerte', async () => {
+  it('oversaetter andre fejl til en generisk besked, men bevarer originalen som cause', async () => {
+    expect.assertions(3);
     const original = httpFejl(500);
-    await expect(
-      skrivMedEtag(async () => { throw original; }, 'tage sagen')
-    ).rejects.toBe(original);
+    try {
+      await skrivMedEtag(async () => { throw original; }, 'tage sagen');
+      fail('skulle have kastet');
+    } catch (e) {
+      // Den originale HttpRequestError kan baere request-URL, svartekst og
+      // SharePoints korrelations-id - det skal ikke vises for brugeren.
+      expect((e as Error).message).not.toBe(original.message);
+      expect((e as Error).message).toBe(
+        'Der opstod en fejl, da du forsøgte at tage sagen. Prøv igen, eller kontakt IT-support hvis problemet fortsætter.'
+      );
+      expect((e as Error).cause).toBe(original);
+    }
   });
 
   it('genkender en samtidighedsfejl', () => {

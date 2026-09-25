@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { Button, Card, Input, Link, MessageBar, Title3, tokens } from '@fluentui/react-components';
+import { Button, Card, Input, Link, MessageBar, Text, Title3, tokens } from '@fluentui/react-components';
 import { ILink } from '../../domaene/typer';
+import { sikkerUrl } from '../../domaene/sikkerhed';
 import { LinkService } from '../../services/LinkService';
 
 export interface ILinkPanelProps {
@@ -86,21 +87,28 @@ export const LinkPanel: React.FunctionComponent<ILinkPanelProps> = ({
       </div>
 
       <div style={{ marginTop: tokens.spacingVerticalM }}>
-        {links.map((l) => (
-          <div key={l.Id} style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS }}>
-            <Link href={l.Url?.Url} target="_blank">
-              {l.Title}
-            </Link>
-            <Button
-              size="small"
-              appearance="subtle"
-              disabled={arbejder}
-              onClick={() => koer(() => linkService.slet(l.Id))}
-            >
-              Slet
-            </Button>
-          </div>
-        ))}
+        {links.map((l) => {
+          const href = sikkerUrl(l.Url?.Url);
+          return (
+            <div key={l.Id} style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS }}>
+              {href ? (
+                <Link href={href} target="_blank">
+                  {l.Title}
+                </Link>
+              ) : (
+                <Text>{l.Title}</Text>
+              )}
+              <Button
+                size="small"
+                appearance="subtle"
+                disabled={arbejder}
+                onClick={() => koer(() => linkService.slet(l.Id))}
+              >
+                Slet
+              </Button>
+            </div>
+          );
+        })}
       </div>
     </Card>
   );

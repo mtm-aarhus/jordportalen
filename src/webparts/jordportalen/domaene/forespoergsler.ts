@@ -8,8 +8,14 @@ import { SagStatus } from './typer';
  * ikke maa kunne omgaas ved at aendre noget i UI'et.
  */
 
-/** Escaper et apostrof, saa det ikke braekker OData-udtrykket. */
-function tekst(vaerdi: string): string {
+/**
+ * Escaper et apostrof, saa det ikke braekker OData-udtrykket, og omslutter
+ * med anfoerselstegn.
+ *
+ * Eksporteret, saa det er den eneste udgave af denne sikkerhedslogik - to
+ * kopier (fx en i ProfilService) risikerer at drifte fra hinanden.
+ */
+export function tekst(vaerdi: string): string {
   return `'${vaerdi.replace(/'/g, "''")}'`;
 }
 
