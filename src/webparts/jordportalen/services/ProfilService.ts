@@ -31,7 +31,13 @@ export class ProfilService {
       return cachet;
     }
 
-    const opslag = this.hentUdenCache(brugerId);
+    // Fejler opslaget, maa den afviste promise ikke blive staaende i cachen -
+    // ellers er den forgiftet resten af sessionen, og et enkelt fejlslagent
+    // opslag goer at ingen senere sag med samme ansvarlige kan aabnes.
+    const opslag = this.hentUdenCache(brugerId).catch((fejl) => {
+      this.cache.delete(brugerId);
+      throw fejl;
+    });
     this.cache.set(brugerId, opslag);
     return opslag;
   }

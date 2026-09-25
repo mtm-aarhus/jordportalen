@@ -5,6 +5,7 @@ import '@pnp/sp/items';
 
 import { hentAlleSider } from '../domaene/paginering';
 import { sagIdFilter } from '../domaene/forespoergsler';
+import { oversaetFejl } from '../domaene/samtidighed';
 import { Handling, ILogPost, LIST_NAMES } from '../domaene/typer';
 
 const FELTER = 'Id,Title,SagId,Handling,FraStatus,TilStatus,Kommentar,Created';
@@ -62,6 +63,10 @@ export class LogService {
       vaerdier.TaggedeBrugereId = { results: post.taggedeBrugerIds };
     }
 
-    await this.sp.web.lists.getByTitle(LIST_NAMES.LOG).items.add(vaerdier);
+    try {
+      await this.sp.web.lists.getByTitle(LIST_NAMES.LOG).items.add(vaerdier);
+    } catch (fejl) {
+      throw oversaetFejl(fejl, 'tilføje logposten');
+    }
   }
 }

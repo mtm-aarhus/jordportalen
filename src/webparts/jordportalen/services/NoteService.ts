@@ -5,6 +5,7 @@ import '@pnp/sp/items';
 
 import { hentAlleSider } from '../domaene/paginering';
 import { noteFilter } from '../domaene/forespoergsler';
+import { oversaetFejl } from '../domaene/samtidighed';
 import { INote, LIST_NAMES } from '../domaene/typer';
 
 /**
@@ -38,11 +39,15 @@ export class NoteService {
   }
 
   public async tilfoej(sagId: number, tekst: string): Promise<void> {
-    await this.sp.web.lists.getByTitle(LIST_NAMES.NOTER).items.add({
-      Title: `Note – sag ${sagId}`,
-      SagId: sagId,
-      Tekst: tekst,
-    });
+    try {
+      await this.sp.web.lists.getByTitle(LIST_NAMES.NOTER).items.add({
+        Title: `Note – sag ${sagId}`,
+        SagId: sagId,
+        Tekst: tekst,
+      });
+    } catch (fejl) {
+      throw oversaetFejl(fejl, 'gemme noten');
+    }
   }
 
   public async opdater(noteId: number, tekst: string): Promise<void> {
@@ -50,6 +55,10 @@ export class NoteService {
   }
 
   public async slet(noteId: number): Promise<void> {
-    await this.sp.web.lists.getByTitle(LIST_NAMES.NOTER).items.getById(noteId).delete();
+    try {
+      await this.sp.web.lists.getByTitle(LIST_NAMES.NOTER).items.getById(noteId).delete();
+    } catch (fejl) {
+      throw oversaetFejl(fejl, 'slette noten');
+    }
   }
 }

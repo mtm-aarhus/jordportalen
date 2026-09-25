@@ -19,6 +19,7 @@ describe('skrivMedEtag', () => {
   });
 
   it('oversaetter 412 til en samtidighedsfejl med laesbar besked', async () => {
+    expect.assertions(2);
     await expect(
       skrivMedEtag(async () => { throw httpFejl(412); }, 'tage sagen')
     ).rejects.toThrow(SamtidighedsFejl);
@@ -33,6 +34,7 @@ describe('skrivMedEtag', () => {
   });
 
   it('oversaetter 403 til en adgangsfejl der naevner handlingen', async () => {
+    expect.assertions(2);
     try {
       await skrivMedEtag(async () => { throw httpFejl(403); }, 'tage sagen');
       fail('skulle have kastet');

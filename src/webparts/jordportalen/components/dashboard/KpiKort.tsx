@@ -1,13 +1,16 @@
 import * as React from 'react';
 import { Card, Text, Title2, tokens } from '@fluentui/react-components';
+import { STANDARD_MAKSANTAL } from '../../domaene/paginering';
 import { ISag } from '../../domaene/typer';
 
 export interface IKpiKortProps {
   sager: ISag[];
   brugerId: number;
+  /** Sand hvis `sager` er afkortet af sikkerhedsgraensen i hentAlleSager. */
+  afkortet: boolean;
 }
 
-export const KpiKort: React.FunctionComponent<IKpiKortProps> = ({ sager, brugerId }) => {
+export const KpiKort: React.FunctionComponent<IKpiKortProps> = ({ sager, brugerId, afkortet }) => {
   const tal = React.useMemo(
     () => ({
       ialt: sager.length,
@@ -18,11 +21,18 @@ export const KpiKort: React.FunctionComponent<IKpiKortProps> = ({ sager, brugerI
     [sager, brugerId]
   );
 
-  const kort: { etiket: string; vaerdi: number }[] = [
-    { etiket: 'Sager i alt', vaerdi: tal.ialt },
-    { etiket: 'Ledige', vaerdi: tal.ledige },
-    { etiket: 'Mine sager', vaerdi: tal.mine },
-    { etiket: 'Afventer', vaerdi: tal.afventer },
+  // "Sager i alt" maa aldrig se ud som et facit, naar det kun er de foerste
+  // STANDARD_MAKSANTAL. Er resultatet afkortet, vises graensen med et "+" i
+  // stedet for det tal, listen faktisk blev afkortet ved.
+  const ialtVaerdi = afkortet
+    ? `${STANDARD_MAKSANTAL.toLocaleString('da-DK')}+`
+    : String(tal.ialt);
+
+  const kort: { etiket: string; vaerdi: string }[] = [
+    { etiket: 'Sager i alt', vaerdi: ialtVaerdi },
+    { etiket: 'Ledige', vaerdi: String(tal.ledige) },
+    { etiket: 'Mine sager', vaerdi: String(tal.mine) },
+    { etiket: 'Afventer', vaerdi: String(tal.afventer) },
   ];
 
   return (

@@ -98,8 +98,12 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
         tjenester.dokument.hentForSag(sagId),
       ]);
 
+    // Profilopslaget er en bekvemmelighed, ikke et krav - en sag skal kunne
+    // aabnes, selv om den ansvarliges profil ikke kan slaas op (fx en bruger
+    // der er fjernet fra sitet). AnsvarligKort haandterer allerede en
+    // manglende profil.
     const ansvarligProfil = sag.AnsvarligId
-      ? await tjenester.profil.hentProfil(sag.AnsvarligId)
+      ? await tjenester.profil.hentProfil(sag.AnsvarligId).catch(() => undefined)
       : undefined;
 
     if (foraeldet.current) { return; }
@@ -186,16 +190,9 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
             sag={data.sag}
             profil={data.ansvarligProfil}
             brugerId={brugerId}
-            onTag={async () => {
-              const advarsel = await tjenester.sag.tagSag(data.sag, brugerId);
-              await hentAlt();
-              return advarsel;
-            }}
-            onFrigiv={async () => {
-              const advarsel = await tjenester.sag.frigivSag(data.sag);
-              await hentAlt();
-              return advarsel;
-            }}
+            onTag={() => tjenester.sag.tagSag(data.sag, brugerId)}
+            onFrigiv={() => tjenester.sag.frigivSag(data.sag)}
+            onOpdateret={hentAlt}
           />
           <div style={{ height: tokens.spacingVerticalM }} />
           <Metadata
