@@ -109,9 +109,12 @@ PnPjs foelger ikke med SPFx-generatoren og skal installeres eksplicit. Uden den
 kan intet i `services/` kompilere.
 
 ```bash
-npm install @pnp/sp@4
+npm install @pnp/sp@4 @fluentui/react-components@9
 npm install --save-dev jest@29 ts-jest@29 @types/jest@29
 ```
+
+Generatoren leverer Fluent UI v8 (`@fluentui/react`). Hele loesningen bygges paa
+v9, som er en separat pakke og skal installeres eksplicit.
 
 - [ ] **Step 4: Opret jest.config.js**
 
