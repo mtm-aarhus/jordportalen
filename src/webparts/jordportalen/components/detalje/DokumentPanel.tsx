@@ -89,7 +89,7 @@ export const DokumentPanel: React.FunctionComponent<IDokumentPanelProps> = ({
               size="small"
               appearance="subtle"
               disabled={arbejder}
-              onClick={() => koer(() => dokumentService.slet(d.ServerRelativeUrl))}
+              onClick={() => koer(() => dokumentService.slet(sagId, d.ServerRelativeUrl))}
             >
               Slet
             </Button>

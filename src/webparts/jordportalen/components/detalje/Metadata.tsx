@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Card, Link, Text, Title3, tokens } from '@fluentui/react-components';
 import { IAdresse, IBilag, IKontakt, ISag } from '../../domaene/typer';
+import { sikkerUrl } from '../../domaene/sikkerhed';
 
 export interface IMetadataProps {
   sag: ISag;
@@ -24,7 +25,10 @@ export const Metadata: React.FunctionComponent<IMetadataProps> = ({
   adresser,
   kontakter,
   bilag,
-}) => (
+}) => {
+  const os2FormsUrl = sikkerUrl(sag.OS2FormsUrl?.Url);
+
+  return (
   <div style={{ display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalM }}>
     <Card style={{ padding: tokens.spacingVerticalM }}>
       <Title3>Ansøgning</Title3>
@@ -41,9 +45,13 @@ export const Metadata: React.FunctionComponent<IMetadataProps> = ({
       />
       <Felt etiket="Bemærkninger" vaerdi={sag.Bemaerkninger} />
       {sag.OS2FormsUrl?.Url && (
-        <Link href={sag.OS2FormsUrl.Url} target="_blank">
-          Se original i OS2Forms
-        </Link>
+        os2FormsUrl ? (
+          <Link href={os2FormsUrl} target="_blank">
+            Se original i OS2Forms
+          </Link>
+        ) : (
+          <Text block>Se original i OS2Forms</Text>
+        )
       )}
     </Card>
 
@@ -79,17 +87,21 @@ export const Metadata: React.FunctionComponent<IMetadataProps> = ({
 
     <Card style={{ padding: tokens.spacingVerticalM }}>
       <Title3>Bilag fra ansøger ({bilag.length})</Title3>
-      {bilag.map((b) => (
-        <div key={b.Id}>
-          {b.FilUrl?.Url ? (
-            <Link href={b.FilUrl.Url} target="_blank">
-              {b.Filnavn || b.FilId}
-            </Link>
-          ) : (
-            <Text block>{b.Filnavn || `Fil ${b.FilId}`}</Text>
-          )}
-        </div>
-      ))}
+      {bilag.map((b) => {
+        const filUrl = sikkerUrl(b.FilUrl?.Url);
+        return (
+          <div key={b.Id}>
+            {filUrl ? (
+              <Link href={filUrl} target="_blank">
+                {b.Filnavn || b.FilId}
+              </Link>
+            ) : (
+              <Text block>{b.Filnavn || `Fil ${b.FilId}`}</Text>
+            )}
+          </div>
+        );
+      })}
     </Card>
   </div>
-);
+  );
+};

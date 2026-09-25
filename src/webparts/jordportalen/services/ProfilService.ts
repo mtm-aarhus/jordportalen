@@ -3,6 +3,7 @@ import '@pnp/sp/webs';
 import '@pnp/sp/site-users';
 import '@pnp/sp/profiles';
 
+import { tekst } from '../domaene/forespoergsler';
 import { IPerson, IProfil } from '../domaene/typer';
 
 /**
@@ -71,13 +72,13 @@ export class ProfilService {
     return profil;
   }
 
-  public async soegBrugere(tekst: string): Promise<IPerson[]> {
-    if (tekst.trim().length < 3) {
+  public async soegBrugere(soegetekst: string): Promise<IPerson[]> {
+    if (soegetekst.trim().length < 3) {
       return [];
     }
 
     const brugere = await this.sp.web.siteUsers
-      .filter(`substringof('${tekst.replace(/'/g, "''")}', Title)`)
+      .filter(`substringof(${tekst(soegetekst)}, Title)`)
       .top(20)();
 
     return brugere

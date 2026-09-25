@@ -91,7 +91,23 @@ export class DokumentService {
     });
   }
 
-  public async slet(serverRelativUrl: string): Promise<void> {
+  /**
+   * Sletter (genbruger) en fil fra sagens egen mappe.
+   *
+   * `serverRelativUrl` kommer fra listevisningen, men intet forhindrer en
+   * fremtidig kalder i at sende en vilkaarlig server-relativ sti. Uden dette
+   * tjek ville tjenesten genbruge enhver fil i biblioteket, bare stien blev
+   * sendt med - ikke kun filer i den sag, brugeren har aabent.
+   */
+  public async slet(sagId: number, serverRelativUrl: string): Promise<void> {
+    const bibliotek = this.sp.web.lists.getByTitle(LIST_NAMES.DOKUMENTER);
+    const rod = await bibliotek.rootFolder();
+    const sagsMappe = `${rod.ServerRelativeUrl}/${this.mappeNavn(sagId)}/`;
+
+    if (!serverRelativUrl.startsWith(sagsMappe)) {
+      throw new Error('Filen ligger ikke i sagens egen mappe.');
+    }
+
     try {
       await this.sp.web.getFileByServerRelativePath(serverRelativUrl).recycle();
     } catch (fejl) {
