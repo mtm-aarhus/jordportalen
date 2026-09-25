@@ -62,6 +62,19 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
   const [data, setData] = React.useState<ISagData | undefined>(undefined);
   const [fejl, setFejl] = React.useState<string | undefined>(undefined);
 
+  // Holder styr paa om komponenten (eller sagId'en) er skiftet ud, saa et svar
+  // fra en foraeldet hentning eller handling ikke skriver til en tilstand,
+  // der ikke laengere hoerer til denne sag / dette mount. Nulstilles naar
+  // sagId aendrer sig, og saettes i oprydningen for indlaesningseffekten.
+  const foraeldet = React.useRef(false);
+
+  React.useEffect(() => {
+    foraeldet.current = false;
+    return () => {
+      foraeldet.current = true;
+    };
+  }, [sagId]);
+
   /** Henter sagen og alle dens datasaet parallelt. */
   const hentAlt = React.useCallback(async (): Promise<void> => {
     const sag = await tjenester.sag.hentSag(sagId);
@@ -82,13 +95,16 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
       ? await tjenester.profil.hentProfil(sag.AnsvarligId)
       : undefined;
 
+    if (foraeldet.current) { return; }
     setData({
       sag, adresser, kontakter, bilag, logposter, noter, opgaver, links, dokumenter, ansvarligProfil,
     });
   }, [sagId, tjenester, brugerId]);
 
   React.useEffect(() => {
-    hentAlt().catch((e: Error) => setFejl(e.message));
+    hentAlt().catch((e: Error) => {
+      if (!foraeldet.current) { setFejl(e.message); }
+    });
   }, [hentAlt]);
 
   /**
@@ -99,30 +115,43 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
    */
   const opdater = React.useCallback(
     async (hvad: keyof ISagData): Promise<void> => {
-      if (!data) { return; }
-
       switch (hvad) {
-        case 'logposter':
-          setData({ ...data, logposter: await tjenester.log.hentForSag(sagId) });
+        case 'logposter': {
+          const logposter = await tjenester.log.hentForSag(sagId);
+          if (foraeldet.current) { return; }
+          setData((d) => (d ? { ...d, logposter } : d));
           break;
-        case 'noter':
-          setData({ ...data, noter: await tjenester.note.hentMine(sagId, brugerId) });
+        }
+        case 'noter': {
+          const noter = await tjenester.note.hentMine(sagId, brugerId);
+          if (foraeldet.current) { return; }
+          setData((d) => (d ? { ...d, noter } : d));
           break;
-        case 'opgaver':
-          setData({ ...data, opgaver: await tjenester.opgave.hentForSag(sagId) });
+        }
+        case 'opgaver': {
+          const opgaver = await tjenester.opgave.hentForSag(sagId);
+          if (foraeldet.current) { return; }
+          setData((d) => (d ? { ...d, opgaver } : d));
           break;
-        case 'links':
-          setData({ ...data, links: await tjenester.link.hentForSag(sagId) });
+        }
+        case 'links': {
+          const links = await tjenester.link.hentForSag(sagId);
+          if (foraeldet.current) { return; }
+          setData((d) => (d ? { ...d, links } : d));
           break;
-        case 'dokumenter':
-          setData({ ...data, dokumenter: await tjenester.dokument.hentForSag(sagId) });
+        }
+        case 'dokumenter': {
+          const dokumenter = await tjenester.dokument.hentForSag(sagId);
+          if (foraeldet.current) { return; }
+          setData((d) => (d ? { ...d, dokumenter } : d));
           break;
+        }
         default:
           // Status og ansvarlig aendrer sagen selv, og ETag'en skal fornyes.
           await hentAlt();
       }
     },
-    [data, sagId, brugerId, tjenester, hentAlt]
+    [sagId, brugerId, tjenester, hentAlt]
   );
 
   if (fejl) {
@@ -151,12 +180,14 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
             profil={data.ansvarligProfil}
             brugerId={brugerId}
             onTag={async () => {
-              await tjenester.sag.tagSag(data.sag, brugerId);
+              const advarsel = await tjenester.sag.tagSag(data.sag, brugerId);
               await hentAlt();
+              return advarsel;
             }}
             onFrigiv={async () => {
-              await tjenester.sag.frigivSag(data.sag);
+              const advarsel = await tjenester.sag.frigivSag(data.sag);
               await hentAlt();
+              return advarsel;
             }}
           />
           <div style={{ height: tokens.spacingVerticalM }} />
