@@ -22,6 +22,9 @@ import {
 } from '../../domaene/typer';
 import { Metadata } from './Metadata';
 import { AnsvarligKort } from './AnsvarligKort';
+import { StatusPanel } from './StatusPanel';
+import { KommentarPanel } from './KommentarPanel';
+import { NoterPanel } from './NoterPanel';
 
 export interface ITjenester {
   sag: SagService;
@@ -200,8 +203,27 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
         </div>
 
         <div style={{ flex: '1 1 420px', minWidth: '320px' }}>
-          {/* De syv paneler indsaettes i Task 17 og 18. */}
-          <p>Paneler kommer her. Opdateringsfunktion klar: {typeof opdater}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalM }}>
+            <StatusPanel
+              sag={data.sag}
+              sagService={tjenester.sag}
+              brugerId={brugerId}
+              onOpdateret={hentAlt}
+            />
+            <KommentarPanel
+              sagId={sagId}
+              logposter={data.logposter}
+              logService={tjenester.log}
+              profil={tjenester.profil}
+              onOpdateret={() => opdater('logposter')}
+            />
+            <NoterPanel
+              sagId={sagId}
+              noter={data.noter}
+              noteService={tjenester.note}
+              onOpdateret={() => opdater('noter')}
+            />
+          </div>
         </div>
       </div>
     </div>
