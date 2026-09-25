@@ -7,6 +7,7 @@ import '@pnp/sp/folders';
 
 import { hentAlleSider } from '../domaene/paginering';
 import { sagIdFilter } from '../domaene/forespoergsler';
+import { oversaetFejl } from '../domaene/samtidighed';
 import { IDokument, LIST_NAMES } from '../domaene/typer';
 import { LogService } from './LogService';
 
@@ -69,14 +70,19 @@ export class DokumentService {
       // Mappen fandtes allerede.
     }
 
-    const uploadet = await this.sp.web
-      .getFolderByServerRelativePath(mappe)
-      .files.addUsingPath(fil.name, fil, { Overwrite: false });
+    let uploadet;
+    try {
+      uploadet = await this.sp.web
+        .getFolderByServerRelativePath(mappe)
+        .files.addUsingPath(fil.name, fil, { Overwrite: false });
 
-    // SagId saettes paa selve list-elementet, saa filen kan findes uden at
-    // traversere mapper.
-    const element = await this.sp.web.getFileByServerRelativePath(uploadet.ServerRelativeUrl).getItem();
-    await element.update({ SagId: sagId });
+      // SagId saettes paa selve list-elementet, saa filen kan findes uden at
+      // traversere mapper.
+      const element = await this.sp.web.getFileByServerRelativePath(uploadet.ServerRelativeUrl).getItem();
+      await element.update({ SagId: sagId });
+    } catch (fejl) {
+      throw oversaetFejl(fejl, 'uploade dokumentet');
+    }
 
     await this.log.tilfoej({
       sagId,
@@ -86,6 +92,10 @@ export class DokumentService {
   }
 
   public async slet(serverRelativUrl: string): Promise<void> {
-    await this.sp.web.getFileByServerRelativePath(serverRelativUrl).recycle();
+    try {
+      await this.sp.web.getFileByServerRelativePath(serverRelativUrl).recycle();
+    } catch (fejl) {
+      throw oversaetFejl(fejl, 'slette dokumentet');
+    }
   }
 }

@@ -5,6 +5,7 @@ import '@pnp/sp/items';
 
 import { hentAlleSider } from '../domaene/paginering';
 import { sagIdFilter } from '../domaene/forespoergsler';
+import { oversaetFejl } from '../domaene/samtidighed';
 import { IOpgave, LIST_NAMES } from '../domaene/typer';
 import { LogService } from './LogService';
 
@@ -28,11 +29,15 @@ export class OpgaveService {
   }
 
   public async opret(sagId: number, tekst: string): Promise<void> {
-    await this.sp.web.lists.getByTitle(LIST_NAMES.OPGAVER).items.add({
-      Title: tekst,
-      SagId: sagId,
-      Udfoert: false,
-    });
+    try {
+      await this.sp.web.lists.getByTitle(LIST_NAMES.OPGAVER).items.add({
+        Title: tekst,
+        SagId: sagId,
+        Udfoert: false,
+      });
+    } catch (fejl) {
+      throw oversaetFejl(fejl, 'oprette opgaven');
+    }
 
     await this.log.tilfoej({
       sagId,
@@ -42,10 +47,14 @@ export class OpgaveService {
   }
 
   public async saetUdfoert(opgave: IOpgave, udfoert: boolean): Promise<void> {
-    await this.sp.web.lists
-      .getByTitle(LIST_NAMES.OPGAVER)
-      .items.getById(opgave.Id)
-      .update({ Udfoert: udfoert });
+    try {
+      await this.sp.web.lists
+        .getByTitle(LIST_NAMES.OPGAVER)
+        .items.getById(opgave.Id)
+        .update({ Udfoert: udfoert });
+    } catch (fejl) {
+      throw oversaetFejl(fejl, 'opdatere opgaven');
+    }
 
     // Kun afkrydsning logges. En fortrydelse er ikke en begivenhed, der er
     // vaerd at fylde historikken med.
@@ -59,6 +68,10 @@ export class OpgaveService {
   }
 
   public async slet(opgaveId: number): Promise<void> {
-    await this.sp.web.lists.getByTitle(LIST_NAMES.OPGAVER).items.getById(opgaveId).delete();
+    try {
+      await this.sp.web.lists.getByTitle(LIST_NAMES.OPGAVER).items.getById(opgaveId).delete();
+    } catch (fejl) {
+      throw oversaetFejl(fejl, 'slette opgaven');
+    }
   }
 }

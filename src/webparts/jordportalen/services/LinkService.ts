@@ -5,6 +5,7 @@ import '@pnp/sp/items';
 
 import { hentAlleSider } from '../domaene/paginering';
 import { sagIdFilter } from '../domaene/forespoergsler';
+import { oversaetFejl } from '../domaene/samtidighed';
 import { ILink, LIST_NAMES } from '../domaene/typer';
 import { LogService } from './LogService';
 
@@ -28,11 +29,15 @@ export class LinkService {
   }
 
   public async tilfoej(sagId: number, etiket: string, url: string): Promise<void> {
-    await this.sp.web.lists.getByTitle(LIST_NAMES.LINKS).items.add({
-      Title: etiket,
-      SagId: sagId,
-      Url: { Url: url, Description: etiket },
-    });
+    try {
+      await this.sp.web.lists.getByTitle(LIST_NAMES.LINKS).items.add({
+        Title: etiket,
+        SagId: sagId,
+        Url: { Url: url, Description: etiket },
+      });
+    } catch (fejl) {
+      throw oversaetFejl(fejl, 'tilføje linket');
+    }
 
     await this.log.tilfoej({
       sagId,
@@ -42,6 +47,10 @@ export class LinkService {
   }
 
   public async slet(linkId: number): Promise<void> {
-    await this.sp.web.lists.getByTitle(LIST_NAMES.LINKS).items.getById(linkId).delete();
+    try {
+      await this.sp.web.lists.getByTitle(LIST_NAMES.LINKS).items.getById(linkId).delete();
+    } catch (fejl) {
+      throw oversaetFejl(fejl, 'slette linket');
+    }
   }
 }

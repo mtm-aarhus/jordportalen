@@ -17,6 +17,7 @@ export interface IAnsvarligKortProps {
   brugerId: number;
   onTag: () => Promise<string | undefined>;
   onFrigiv: () => Promise<string | undefined>;
+  onOpdateret: () => Promise<void>;
 }
 
 export const AnsvarligKort: React.FunctionComponent<IAnsvarligKortProps> = ({
@@ -25,6 +26,7 @@ export const AnsvarligKort: React.FunctionComponent<IAnsvarligKortProps> = ({
   brugerId,
   onTag,
   onFrigiv,
+  onOpdateret,
 }) => {
   const [arbejder, setArbejder] = React.useState(false);
   const [fejl, setFejl] = React.useState<string | undefined>(undefined);
@@ -37,10 +39,24 @@ export const AnsvarligKort: React.FunctionComponent<IAnsvarligKortProps> = ({
     setArbejder(true);
     setFejl(undefined);
     setAdvarsel(undefined);
+    let handlingsAdvarsel: string | undefined;
     try {
-      setAdvarsel(await handling());
+      handlingsAdvarsel = await handling();
     } catch (e) {
       setFejl((e as Error).message);
+      setArbejder(false);
+      return;
+    }
+
+    // Handlingen er gennemfoert paa dette tidspunkt. Fejler kun
+    // genindlaesningen, er det ikke en fejl i selve handlingen - en fejlbjaelke
+    // her ville faa brugeren til at proeve igen med en nu foraeldet ETag.
+    setAdvarsel(handlingsAdvarsel);
+    try {
+      await onOpdateret();
+    } catch (e) {
+      const opdateringsfejl = `Handlingen blev gennemført, men siden kunne ikke opdateres automatisk: ${(e as Error).message}`;
+      setAdvarsel((forrige) => (forrige ? `${forrige} ${opdateringsfejl}` : opdateringsfejl));
     } finally {
       setArbejder(false);
     }

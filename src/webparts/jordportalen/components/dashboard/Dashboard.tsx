@@ -40,22 +40,27 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
     };
 
     setIndlaeser(true);
-    // void: kaeden afsluttes med .then(), ikke .catch(), saa lint (no-floating-promises)
-    // kraever et eksplicit tegn paa at det er tilsigtet - fejlen er allerede haandteret ovenfor.
-    void sag
+    // Kaeden afsluttes med .catch() (ikke et afsluttende .then()), saa
+    // lint (no-floating-promises) betragter den som haandteret uden et
+    // eksplicit void.
+    sag
       .hentAlleSager(filter)
       .then((r) => {
         if (foraeldet) { return; } // et senere kald har overhalet dette
         setSager(r.elementer);
         setAfkortet(r.afkortet);
         setFejl(undefined);
+        setIndlaeser(false);
       })
       .catch((e: Error) => {
         if (foraeldet) { return; }
+        // Fejler genindlaesningen, skal de gamle raekker ikke blive staaende
+        // under fejlbjaelken - ellers viser KPI-kortene, tabellen og
+        // afkortningsbjaelken stadig det forrige filters resultat.
         setFejl(e.message);
-      })
-      .then(() => {
-        if (!foraeldet) { setIndlaeser(false); }
+        setSager([]);
+        setAfkortet(false);
+        setIndlaeser(false);
       });
 
     return () => {
@@ -88,7 +93,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
         </MessageBar>
       )}
 
-      <KpiKort sager={sager} brugerId={brugerId} />
+      <KpiKort sager={sager} brugerId={brugerId} afkortet={afkortet} />
 
       <Filtre
         status={status}

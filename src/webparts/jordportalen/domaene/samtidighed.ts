@@ -39,6 +39,31 @@ function statuskode(fejl: unknown): number | undefined {
 }
 
 /**
+ * Oversaetter en fejl til de to varianter, brugere faktisk rammer.
+ *
+ * Delt mellem alle skrivende tjenester - ikke kun dem, der bruger ETag - saa
+ * en 403 giver samme laesbare besked, uanset om det er et statusskift eller
+ * en note, der blev afvist.
+ *
+ * @param fejl Den fangede fejl, typisk en HttpRequestError fra PnPjs.
+ * @param beskrivelse Hvad brugeren forsoegte, i infinitiv: "tage sagen".
+ *                    Indgaar i fejlbeskeden ved manglende rettigheder.
+ */
+export function oversaetFejl(fejl: unknown, beskrivelse: string): Error {
+  const kode = statuskode(fejl);
+
+  if (kode === 412) {
+    return new SamtidighedsFejl(
+      'Sagen blev ændret af en anden, mens du arbejdede. Genindlæs og prøv igen.'
+    );
+  }
+  if (kode === 403) {
+    return new AdgangsFejl(`Du har ikke rettigheder til at ${beskrivelse}.`);
+  }
+  return fejl as Error;
+}
+
+/**
  * Koerer en skrivning og oversaetter de to fejl, brugere faktisk rammer.
  *
  * @param skriv Selve skrivningen, med ETag sat af kalderen.
@@ -52,16 +77,6 @@ export async function skrivMedEtag<T>(
   try {
     return await skriv();
   } catch (fejl) {
-    const kode = statuskode(fejl);
-
-    if (kode === 412) {
-      throw new SamtidighedsFejl(
-        'Sagen blev ændret af en anden, mens du arbejdede. Genindlæs og prøv igen.'
-      );
-    }
-    if (kode === 403) {
-      throw new AdgangsFejl(`Du har ikke rettigheder til at ${beskrivelse}.`);
-    }
-    throw fejl;
+    throw oversaetFejl(fejl, beskrivelse);
   }
 }
