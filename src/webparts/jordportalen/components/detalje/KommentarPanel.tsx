@@ -33,12 +33,14 @@ export const KommentarPanel: React.FunctionComponent<IKommentarPanelProps> = ({
   const [taggede, setTaggede] = React.useState<IPerson[]>([]);
   const [arbejder, setArbejder] = React.useState(false);
   const [fejl, setFejl] = React.useState<string | undefined>(undefined);
+  const [advarsel, setAdvarsel] = React.useState<string | undefined>(undefined);
 
   const kommentarer = logposter.filter((l) => l.Handling === 'Kommentar');
 
   const gem = async (): Promise<void> => {
     setArbejder(true);
     setFejl(undefined);
+    setAdvarsel(undefined);
     try {
       await logService.tilfoej({
         sagId,
@@ -50,9 +52,18 @@ export const KommentarPanel: React.FunctionComponent<IKommentarPanelProps> = ({
       });
       setTekst('');
       setTaggede([]);
-      await onOpdateret();
     } catch (e) {
       setFejl((e as Error).message);
+      setArbejder(false);
+      return;
+    }
+
+    // Kommentaren er gemt - fejler kun genindlaesningen, er det ikke en fejl i
+    // selve handlingen. Vises som advarsel, ikke fejl.
+    try {
+      await onOpdateret();
+    } catch (e) {
+      setAdvarsel(`Kommentaren blev gemt, men listen kunne ikke opdateres: ${(e as Error).message}`);
     } finally {
       setArbejder(false);
     }
@@ -62,6 +73,7 @@ export const KommentarPanel: React.FunctionComponent<IKommentarPanelProps> = ({
     <Card style={{ padding: tokens.spacingVerticalM }}>
       <Title3>Kommentarer</Title3>
       {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
+      {advarsel && <MessageBar intent="warning">{advarsel}</MessageBar>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalS }}>
         <Textarea

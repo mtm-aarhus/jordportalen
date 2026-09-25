@@ -232,18 +232,21 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
               opgaver={data.opgaver}
               opgaveService={tjenester.opgave}
               onOpdateret={() => opdater('opgaver')}
+              onHistorikOpdateret={() => opdater('logposter')}
             />
             <DokumentPanel
               sagId={sagId}
               dokumenter={data.dokumenter}
               dokumentService={tjenester.dokument}
               onOpdateret={() => opdater('dokumenter')}
+              onHistorikOpdateret={() => opdater('logposter')}
             />
             <LinkPanel
               sagId={sagId}
               links={data.links}
               linkService={tjenester.link}
               onOpdateret={() => opdater('links')}
+              onHistorikOpdateret={() => opdater('logposter')}
             />
             <HistorikPanel logposter={data.logposter} />
           </div>
