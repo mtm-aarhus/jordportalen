@@ -1189,14 +1189,13 @@ export class LogService {
   public async hentForSag(sagId: number): Promise<ILogPost[]> {
     const liste = this.sp.web.lists.getByTitle(LIST_NAMES.LOG);
 
-    const resultat = await hentAlleSider<ILogPost>(async (skip, antal) =>
+    const resultat = await hentAlleSider<ILogPost>(
       liste.items
         .select(FELTER, UDVID_FELTER)
         .expand(UDVID)
         .filter(sagIdFilter(sagId))
         .orderBy('Created', false)
-        .skip(skip)
-        .top(antal)()
+        .top(100)
     );
 
     return resultat.elementer;
@@ -1289,19 +1288,17 @@ export class SagService {
     const liste = this.sp.web.lists.getByTitle(LIST_NAMES.SAGER);
     const odata = dashboardFilter(filter);
 
-    return hentAlleSider<ISag>(async (skip, antal) => {
-      let forespoergsel = liste.items
-        .select(OVERSIGT_FELTER, ANSVARLIG_UDVID)
-        .expand('Ansvarlig')
-        .orderBy('ModtagetDato', false)
-        .skip(skip)
-        .top(antal);
+    let forespoergsel = liste.items
+      .select(OVERSIGT_FELTER, ANSVARLIG_UDVID)
+      .expand('Ansvarlig')
+      .orderBy('ModtagetDato', false)
+      .top(100);
 
-      if (odata) {
-        forespoergsel = forespoergsel.filter(odata);
-      }
-      return forespoergsel();
-    });
+    if (odata) {
+      forespoergsel = forespoergsel.filter(odata);
+    }
+
+    return hentAlleSider<ISag>(forespoergsel);
   }
 
   /**
