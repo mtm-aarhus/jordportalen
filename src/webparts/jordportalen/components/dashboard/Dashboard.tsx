@@ -30,6 +30,9 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
   const [soegning, setSoegning] = React.useState('');
 
   React.useEffect(() => {
+    let foraeldet = false; // saettes naar effekten ryddes op, dvs. naar
+    // filtrene aendrer sig eller komponenten unmountes
+
     const filter: IDashboardFilter = {
       status,
       kunLedige,
@@ -42,12 +45,22 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
     void sag
       .hentAlleSager(filter)
       .then((r) => {
+        if (foraeldet) { return; } // et senere kald har overhalet dette
         setSager(r.elementer);
         setAfkortet(r.afkortet);
         setFejl(undefined);
       })
-      .catch((e: Error) => setFejl(e.message))
-      .then(() => setIndlaeser(false));
+      .catch((e: Error) => {
+        if (foraeldet) { return; }
+        setFejl(e.message);
+      })
+      .then(() => {
+        if (!foraeldet) { setIndlaeser(false); }
+      });
+
+    return () => {
+      foraeldet = true;
+    };
   }, [sag, status, kunLedige, kunMine, brugerId]);
 
   // Fritekstsoegningen sker i frontenden, fordi den skal kunne ramme

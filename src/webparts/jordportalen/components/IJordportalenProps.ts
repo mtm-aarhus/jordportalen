@@ -1,4 +1,4 @@
-import { SPFI } from '@pnp/sp';
+import type { SPFI } from '@pnp/sp';
 
 export interface IJordportalenProps {
   sp: SPFI;
