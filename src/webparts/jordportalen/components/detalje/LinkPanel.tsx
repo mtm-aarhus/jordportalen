@@ -8,6 +8,8 @@ export interface ILinkPanelProps {
   links: ILink[];
   linkService: LinkService;
   onOpdateret: () => Promise<void>;
+  /** Kaldes ud over onOpdateret, naar handlingen ogsaa har skrevet en logpost. */
+  onHistorikOpdateret: () => Promise<void>;
 }
 
 export const LinkPanel: React.FunctionComponent<ILinkPanelProps> = ({
@@ -15,33 +17,55 @@ export const LinkPanel: React.FunctionComponent<ILinkPanelProps> = ({
   links,
   linkService,
   onOpdateret,
+  onHistorikOpdateret,
 }) => {
   const [etiket, setEtiket] = React.useState('');
   const [url, setUrl] = React.useState('');
   const [arbejder, setArbejder] = React.useState(false);
   const [fejl, setFejl] = React.useState<string | undefined>(undefined);
+  const [advarsel, setAdvarsel] = React.useState<string | undefined>(undefined);
 
   const gyldig = etiket.trim() !== '' && /^https?:\/\/.+/.test(url.trim());
 
-  const gem = async (): Promise<void> => {
+  /**
+   * Koerer en skrivehandling og opdaterer derefter listen (og historikken,
+   * hvis handlingen ogsaa logger). Fejler skrivningen er det en fejl -
+   * handlingen skete ikke. Fejler kun den efterfoelgende genindlaesning, er
+   * handlingen alligevel gennemfoert, og det vises som en advarsel, ikke en
+   * fejl, som ville faa brugeren til at proeve igen.
+   */
+  const koer = async (handling: () => Promise<void>, medHistorik = false): Promise<void> => {
     setArbejder(true);
     setFejl(undefined);
+    setAdvarsel(undefined);
     try {
-      await linkService.tilfoej(sagId, etiket.trim(), url.trim());
-      setEtiket('');
-      setUrl('');
-      await onOpdateret();
+      await handling();
     } catch (e) {
       setFejl((e as Error).message);
+      setArbejder(false);
+      return;
+    }
+    try {
+      await onOpdateret();
+      if (medHistorik) { await onHistorikOpdateret(); }
+    } catch (e) {
+      setAdvarsel(`Handlingen lykkedes, men listen kunne ikke opdateres: ${(e as Error).message}`);
     } finally {
       setArbejder(false);
     }
   };
 
+  const gem = (): Promise<void> => koer(async () => {
+    await linkService.tilfoej(sagId, etiket.trim(), url.trim());
+    setEtiket('');
+    setUrl('');
+  }, true);
+
   return (
     <Card style={{ padding: tokens.spacingVerticalM }}>
       <Title3>Links</Title3>
       {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
+      {advarsel && <MessageBar intent="warning">{advarsel}</MessageBar>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalS }}>
         <Input
@@ -71,10 +95,7 @@ export const LinkPanel: React.FunctionComponent<ILinkPanelProps> = ({
               size="small"
               appearance="subtle"
               disabled={arbejder}
-              onClick={async () => {
-                await linkService.slet(l.Id);
-                await onOpdateret();
-              }}
+              onClick={() => koer(() => linkService.slet(l.Id))}
             >
               Slet
             </Button>

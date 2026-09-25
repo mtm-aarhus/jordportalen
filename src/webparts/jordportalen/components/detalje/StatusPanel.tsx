@@ -45,18 +45,30 @@ export const StatusPanel: React.FunctionComponent<IStatusPanelProps> = ({
     setArbejder(true);
     setFejl(undefined);
     setAdvarsel(undefined);
+    let logAdvarsel: string | undefined;
     try {
       // Returvaerdien er en advarsel om manglende logning, ikke en fejl.
       // Statussen er skiftet uanset - brugeren maa ikke tro det modsatte og
       // proeve igen.
-      const logAdvarsel = await sagService.skiftStatus(sag, nyStatus, aarsag, kommentar || undefined);
-      setAdvarsel(logAdvarsel);
+      logAdvarsel = await sagService.skiftStatus(sag, nyStatus, aarsag, kommentar || undefined);
       setNyStatus(undefined);
       setAarsag(undefined);
       setKommentar('');
-      await onOpdateret();
     } catch (e) {
       setFejl((e as Error).message);
+      setArbejder(false);
+      return;
+    }
+
+    // Statusskiftet er gennemfoert paa dette tidspunkt. Fejler kun
+    // genindlaesningen, er det ikke en fejl i selve handlingen - en fejlbjaelke
+    // her ville faa brugeren til at proeve igen med en nu foraeldet ETag.
+    setAdvarsel(logAdvarsel);
+    try {
+      await onOpdateret();
+    } catch (e) {
+      const opdateringsfejl = `Statussen blev skiftet, men siden kunne ikke opdateres automatisk: ${(e as Error).message}`;
+      setAdvarsel((forrige) => (forrige ? `${forrige} ${opdateringsfejl}` : opdateringsfejl));
     } finally {
       setArbejder(false);
     }

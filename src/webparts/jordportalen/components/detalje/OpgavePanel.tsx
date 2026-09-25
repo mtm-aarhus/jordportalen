@@ -8,6 +8,8 @@ export interface IOpgavePanelProps {
   opgaver: IOpgave[];
   opgaveService: OpgaveService;
   onOpdateret: () => Promise<void>;
+  /** Kaldes ud over onOpdateret, naar handlingen ogsaa har skrevet en logpost. */
+  onHistorikOpdateret: () => Promise<void>;
 }
 
 export const OpgavePanel: React.FunctionComponent<IOpgavePanelProps> = ({
@@ -15,19 +17,36 @@ export const OpgavePanel: React.FunctionComponent<IOpgavePanelProps> = ({
   opgaver,
   opgaveService,
   onOpdateret,
+  onHistorikOpdateret,
 }) => {
   const [tekst, setTekst] = React.useState('');
   const [arbejder, setArbejder] = React.useState(false);
   const [fejl, setFejl] = React.useState<string | undefined>(undefined);
+  const [advarsel, setAdvarsel] = React.useState<string | undefined>(undefined);
 
-  const koer = async (handling: () => Promise<void>): Promise<void> => {
+  /**
+   * Koerer en skrivehandling og opdaterer derefter listen (og historikken,
+   * hvis handlingen ogsaa logger). Fejler skrivningen er det en fejl -
+   * handlingen skete ikke. Fejler kun den efterfoelgende genindlaesning, er
+   * handlingen alligevel gennemfoert, og det vises som en advarsel, ikke en
+   * fejl, som ville faa brugeren til at proeve igen.
+   */
+  const koer = async (handling: () => Promise<void>, medHistorik = false): Promise<void> => {
     setArbejder(true);
     setFejl(undefined);
+    setAdvarsel(undefined);
     try {
       await handling();
-      await onOpdateret();
     } catch (e) {
       setFejl((e as Error).message);
+      setArbejder(false);
+      return;
+    }
+    try {
+      await onOpdateret();
+      if (medHistorik) { await onHistorikOpdateret(); }
+    } catch (e) {
+      setAdvarsel(`Handlingen lykkedes, men listen kunne ikke opdateres: ${(e as Error).message}`);
     } finally {
       setArbejder(false);
     }
@@ -37,6 +56,7 @@ export const OpgavePanel: React.FunctionComponent<IOpgavePanelProps> = ({
     <Card style={{ padding: tokens.spacingVerticalM }}>
       <Title3>Opgaver</Title3>
       {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
+      {advarsel && <MessageBar intent="warning">{advarsel}</MessageBar>}
 
       <div style={{ display: 'flex', gap: tokens.spacingHorizontalS }}>
         <Input
@@ -51,7 +71,7 @@ export const OpgavePanel: React.FunctionComponent<IOpgavePanelProps> = ({
           onClick={() => koer(async () => {
             await opgaveService.opret(sagId, tekst);
             setTekst('');
-          })}
+          }, true)}
         >
           Tilføj
         </Button>

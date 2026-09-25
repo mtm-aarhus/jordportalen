@@ -8,6 +8,8 @@ export interface IDokumentPanelProps {
   dokumenter: IDokument[];
   dokumentService: DokumentService;
   onOpdateret: () => Promise<void>;
+  /** Kaldes ud over onOpdateret, naar handlingen ogsaa har skrevet en logpost. */
+  onHistorikOpdateret: () => Promise<void>;
 }
 
 export const DokumentPanel: React.FunctionComponent<IDokumentPanelProps> = ({
@@ -15,21 +17,47 @@ export const DokumentPanel: React.FunctionComponent<IDokumentPanelProps> = ({
   dokumenter,
   dokumentService,
   onOpdateret,
+  onHistorikOpdateret,
 }) => {
   const filInput = React.useRef<HTMLInputElement>(null);
   const [arbejder, setArbejder] = React.useState(false);
   const [fejl, setFejl] = React.useState<string | undefined>(undefined);
+  const [advarsel, setAdvarsel] = React.useState<string | undefined>(undefined);
 
-  const upload = async (fil: File): Promise<void> => {
+  /**
+   * Koerer en skrivehandling og opdaterer derefter listen (og historikken,
+   * hvis handlingen ogsaa logger). Fejler skrivningen er det en fejl -
+   * handlingen skete ikke. Fejler kun den efterfoelgende genindlaesning, er
+   * handlingen alligevel gennemfoert, og det vises som en advarsel, ikke en
+   * fejl, som ville faa brugeren til at proeve igen.
+   */
+  const koer = async (handling: () => Promise<void>, medHistorik = false): Promise<void> => {
     setArbejder(true);
     setFejl(undefined);
+    setAdvarsel(undefined);
     try {
-      await dokumentService.upload(sagId, fil);
-      await onOpdateret();
+      await handling();
     } catch (e) {
       setFejl((e as Error).message);
+      setArbejder(false);
+      return;
+    }
+    try {
+      await onOpdateret();
+      if (medHistorik) { await onHistorikOpdateret(); }
+    } catch (e) {
+      setAdvarsel(`Handlingen lykkedes, men listen kunne ikke opdateres: ${(e as Error).message}`);
     } finally {
       setArbejder(false);
+    }
+  };
+
+  const upload = async (fil: File): Promise<void> => {
+    try {
+      await koer(async () => {
+        await dokumentService.upload(sagId, fil);
+      }, true);
+    } finally {
       if (filInput.current) { filInput.current.value = ''; }
     }
   };
@@ -38,6 +66,7 @@ export const DokumentPanel: React.FunctionComponent<IDokumentPanelProps> = ({
     <Card style={{ padding: tokens.spacingVerticalM }}>
       <Title3>Dokumenter</Title3>
       {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
+      {advarsel && <MessageBar intent="warning">{advarsel}</MessageBar>}
 
       <input
         ref={filInput}
@@ -60,10 +89,7 @@ export const DokumentPanel: React.FunctionComponent<IDokumentPanelProps> = ({
               size="small"
               appearance="subtle"
               disabled={arbejder}
-              onClick={async () => {
-                await dokumentService.slet(d.ServerRelativeUrl);
-                await onOpdateret();
-              }}
+              onClick={() => koer(() => dokumentService.slet(d.ServerRelativeUrl))}
             >
               Slet
             </Button>

@@ -29,20 +29,38 @@ export const NoterPanel: React.FunctionComponent<INoterPanelProps> = ({
   const [tekst, setTekst] = React.useState('');
   const [arbejder, setArbejder] = React.useState(false);
   const [fejl, setFejl] = React.useState<string | undefined>(undefined);
+  const [advarsel, setAdvarsel] = React.useState<string | undefined>(undefined);
 
-  const gem = async (): Promise<void> => {
+  /**
+   * Koerer en skrivehandling og opdaterer derefter listen. Fejler skrivningen
+   * er det en fejl (handlingen skete ikke). Fejler kun den efterfoelgende
+   * genindlaesning, er handlingen alligevel gennemfoert, og det vises som en
+   * advarsel - ikke en fejl, som ville faa brugeren til at proeve igen.
+   */
+  const koer = async (handling: () => Promise<void>): Promise<void> => {
     setArbejder(true);
     setFejl(undefined);
+    setAdvarsel(undefined);
     try {
-      await noteService.tilfoej(sagId, tekst);
-      setTekst('');
-      await onOpdateret();
+      await handling();
     } catch (e) {
       setFejl((e as Error).message);
+      setArbejder(false);
+      return;
+    }
+    try {
+      await onOpdateret();
+    } catch (e) {
+      setAdvarsel(`Handlingen lykkedes, men listen kunne ikke opdateres: ${(e as Error).message}`);
     } finally {
       setArbejder(false);
     }
   };
+
+  const gem = (): Promise<void> => koer(async () => {
+    await noteService.tilfoej(sagId, tekst);
+    setTekst('');
+  });
 
   return (
     <Card style={{ padding: tokens.spacingVerticalM }}>
@@ -56,6 +74,7 @@ export const NoterPanel: React.FunctionComponent<INoterPanelProps> = ({
       <Caption1>Vises kun for dig. Ikke en del af sagens fælles historik.</Caption1>
 
       {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
+      {advarsel && <MessageBar intent="warning">{advarsel}</MessageBar>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalS }}>
         <Textarea
@@ -81,10 +100,8 @@ export const NoterPanel: React.FunctionComponent<INoterPanelProps> = ({
             <Button
               size="small"
               appearance="subtle"
-              onClick={async () => {
-                await noteService.slet(n.Id);
-                await onOpdateret();
-              }}
+              disabled={arbejder}
+              onClick={() => koer(() => noteService.slet(n.Id))}
             >
               Slet
             </Button>
