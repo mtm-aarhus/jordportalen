@@ -29,6 +29,7 @@ import { OpgavePanel } from './OpgavePanel';
 import { DokumentPanel } from './DokumentPanel';
 import { LinkPanel } from './LinkPanel';
 import { HistorikPanel } from './HistorikPanel';
+import { SagHoved } from './SagHoved';
 
 export interface ITjenester {
   sag: SagService;
@@ -57,6 +58,8 @@ export interface ISagDetaljeProps {
   sagId: number;
   tjenester: ITjenester;
   brugerId: number;
+  /** Sagens link uden filtre, til "Kopiér link". */
+  delingsLink: string;
   onTilbage: () => void;
 }
 
@@ -64,6 +67,7 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
   sagId,
   tjenester,
   brugerId,
+  delingsLink,
   onTilbage,
 }) => {
   const [data, setData] = React.useState<ISagData | undefined>(undefined);
@@ -168,7 +172,7 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
   if (fejl) {
     return (
       <div>
-        <Button onClick={onTilbage}>Tilbage</Button>
+        <Button appearance="subtle" onClick={onTilbage}>← Oversigten</Button>
         <MessageBar intent="error">{fejl}</MessageBar>
       </div>
     );
@@ -180,9 +184,7 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
 
   return (
     <div>
-      <Button onClick={onTilbage} style={{ marginBottom: tokens.spacingVerticalM }}>
-        Tilbage til oversigten
-      </Button>
+      <SagHoved sag={data.sag} delingsLink={delingsLink} onTilbage={onTilbage} />
 
       <div style={{ display: 'flex', gap: tokens.spacingHorizontalL, flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 380px', minWidth: '320px' }}>

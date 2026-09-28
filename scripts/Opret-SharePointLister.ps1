@@ -3,7 +3,7 @@
     Opretter Jordportalens ni SharePoint-lister med korrekte kolonnetyper.
 
 .DESCRIPTION
-    Svarer en-til-en til SHAREPOINT-LISTER.md. Scriptet er idempotent: det tjekker
+    Scriptet er selv beskrivelsen af listerne. Det er idempotent: det tjekker
     om hver liste og hver kolonne findes, foer den oprettes, saa det kan koeres igen
     uden at lave dubletter.
 
@@ -35,11 +35,11 @@
 
 .EXAMPLE
     # Test med en liste foerst
-    .\Opret-SharePointLister.ps1 -SiteUrl "https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard" -Lister P8Opgaver
+    .\Opret-SharePointLister.ps1 -SiteUrl "https://aarhuskommune.sharepoint.com/teams/Jordportalen" -Lister P8Opgaver
 
 .EXAMPLE
     # Opret dem alle
-    .\Opret-SharePointLister.ps1 -SiteUrl "https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard"
+    .\Opret-SharePointLister.ps1 -SiteUrl "https://aarhuskommune.sharepoint.com/teams/Jordportalen"
 
 .EXAMPLE
     # Kontroller bagefter

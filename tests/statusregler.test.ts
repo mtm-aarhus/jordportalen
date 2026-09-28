@@ -1,5 +1,5 @@
-import { maaSkifte, naeste, validerStatusskift } from '../src/webparts/jordportalen/domaene/statusregler';
-import { SagStatus } from '../src/webparts/jordportalen/domaene/typer';
+import { erAfsluttet, maaSkifte, naeste, validerStatusskift } from '../src/webparts/jordportalen/domaene/statusregler';
+import { ALLE_STATUS, SagStatus } from '../src/webparts/jordportalen/domaene/typer';
 
 describe('statusregler', () => {
   it('tillader den normale vej gennem sagsgangen', () => {
@@ -65,5 +65,29 @@ describe('statusregler', () => {
     expect(validerStatusskift('Afgjort', 'Ny')).toBe(
       'Status kan ikke skifte fra Afgjort til Ny.'
     );
+  });
+});
+
+describe('erAfsluttet', () => {
+  it('er sand for Afgjort og Afvist', () => {
+    expect(erAfsluttet('Afgjort')).toBe(true);
+    expect(erAfsluttet('Afvist')).toBe(true);
+  });
+
+  it('er falsk for de tre aktive statusser', () => {
+    expect(erAfsluttet('Ny')).toBe(false);
+    expect(erAfsluttet('Under behandling')).toBe(false);
+    expect(erAfsluttet('Afventer')).toBe(false);
+  });
+
+  it('stemmer med sagsgangen: afsluttet betyder ingen overgange', () => {
+    // Vagt mod at de to lister glider fra hinanden, hvis sagsgangen aendres.
+    for (const s of ALLE_STATUS) {
+      expect(erAfsluttet(s)).toBe(naeste(s).length === 0);
+    }
+  });
+
+  it('behandler en ukendt status som aktiv', () => {
+    expect(erAfsluttet('Genoptaget' as SagStatus)).toBe(false);
   });
 });

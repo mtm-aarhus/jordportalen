@@ -4,7 +4,7 @@ import '@pnp/sp/lists';
 import '@pnp/sp/items';
 
 import { hentAlleSider, ISideResultat } from '../domaene/paginering';
-import { dashboardFilter, IDashboardFilter, uuidFilter } from '../domaene/forespoergsler';
+import { uuidFilter } from '../domaene/forespoergsler';
 import { AfventerAarsag, IAdresse, IBilag, IKontakt, ISag, LIST_NAMES, SagStatus } from '../domaene/typer';
 import { validerStatusskift } from '../domaene/statusregler';
 import { skrivMedEtag } from '../domaene/samtidighed';
@@ -12,7 +12,7 @@ import { INyLogPost, LogService } from './LogService';
 
 /** Kun de felter dashboardet viser. Detaljerne hentes foerst naar en sag aabnes. */
 const OVERSIGT_FELTER =
-  'Id,Title,SubmissionSerial,Status,AfventerAarsag,ModtagetDato,AdresserTekst,AnsvarligId';
+  'Id,Title,SubmissionSerial,Status,AfventerAarsag,ModtagetDato,AdresserTekst,Grundejere,AnsvarligId';
 
 const SAG_FELTER =
   'Id,Title,SubmissionUUID,SubmissionSerial,SubmissionSid,OS2FormsUrl,Udfylder,IndsendtAf,' +
@@ -29,25 +29,19 @@ export class SagService {
   ) {}
 
   /**
-   * Henter sager til dashboardet.
+   * Henter alle sager til dashboardet.
    *
-   * Filtret ligger server-side, saa sikkerhedsgraensen bruges paa relevante
-   * raekker. Returvaerdien siger om resultatet blev afkortet - graensefladen
-   * SKAL vise det, ellers forsvinder sager tavst.
+   * Filtreringen sker i browseren (domaene/dashboard.ts), saa noegletallene
+   * altid taeller det hele. Returvaerdien siger om resultatet blev afkortet -
+   * graensefladen SKAL vise det, ellers forsvinder sager tavst.
    */
-  public async hentAlleSager(filter: IDashboardFilter = {}): Promise<ISideResultat<ISag>> {
-    const liste = this.sp.web.lists.getByTitle(LIST_NAMES.SAGER);
-    const odata = dashboardFilter(filter);
-
-    let forespoergsel = liste.items
-      .select(OVERSIGT_FELTER, ANSVARLIG_UDVID)
+  public async hentAlleSager(): Promise<ISideResultat<ISag>> {
+    const forespoergsel = this.sp.web.lists
+      .getByTitle(LIST_NAMES.SAGER)
+      .items.select(OVERSIGT_FELTER, ANSVARLIG_UDVID)
       .expand('Ansvarlig')
       .orderBy('ModtagetDato', false)
       .top(100);
-
-    if (odata) {
-      forespoergsel = forespoergsel.filter(odata);
-    }
 
     return hentAlleSider<ISag>(forespoergsel);
   }
