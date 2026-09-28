@@ -1,5 +1,4 @@
 import {
-  dashboardFilter,
   noteFilter,
   sagIdFilter,
   uuidFilter,
@@ -26,33 +25,5 @@ describe('uuidFilter', () => {
 
   it('undgaar at et apostrof braekker forespoergslen', () => {
     expect(uuidFilter("a'b")).toBe("SubmissionUUID eq 'a''b'");
-  });
-});
-
-describe('dashboardFilter', () => {
-  it('giver en tom streng naar intet er valgt', () => {
-    expect(dashboardFilter({})).toBe('');
-  });
-
-  it('filtrerer paa status', () => {
-    expect(dashboardFilter({ status: 'Afventer' })).toBe("Status eq 'Afventer'");
-  });
-
-  it('filtrerer paa mine sager', () => {
-    expect(dashboardFilter({ ansvarligId: 7 })).toBe('AnsvarligId eq 7');
-  });
-
-  it('filtrerer paa ledige sager', () => {
-    expect(dashboardFilter({ kunLedige: true })).toBe('AnsvarligId eq null');
-  });
-
-  it('kombinerer flere kriterier med and', () => {
-    expect(dashboardFilter({ status: 'Ny', kunLedige: true })).toBe(
-      "Status eq 'Ny' and AnsvarligId eq null"
-    );
-  });
-
-  it('ignorerer ansvarligId naar kunLedige er sat, da de udelukker hinanden', () => {
-    expect(dashboardFilter({ ansvarligId: 7, kunLedige: true })).toBe('AnsvarligId eq null');
   });
 });
