@@ -18,6 +18,19 @@ const TILLADTE_SKIFT: Record<SagStatus, SagStatus[]> = {
 };
 
 /**
+ * De to endelige statusser. Dashboardets "aktive" er alt andet.
+ *
+ * Ligger her sammen med sagsgangen, saa en aendring i TILLADTE_SKIFT og i
+ * hvad der regnes som afsluttet sker samme sted. En test holder de to i trit.
+ */
+export const AFSLUTTEDE_STATUS: readonly SagStatus[] = ['Afgjort', 'Afvist'];
+
+/** Sand for Afgjort og Afvist. En ukendt status regnes som aktiv. */
+export function erAfsluttet(status: SagStatus): boolean {
+  return AFSLUTTEDE_STATUS.indexOf(status) !== -1;
+}
+
+/**
  * Slaar de tilladte overgange op for en status.
  *
  * Status kommer fra en SharePoint Choice-kolonne. Aendrer en administrator
