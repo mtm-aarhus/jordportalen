@@ -37,7 +37,7 @@ function delAdresse(url: string): { adresse: string; parametre: URLSearchParams 
   return { adresse, parametre: new URLSearchParams(forespoergsel || '') };
 }
 
-function gyldigtId(raa: string | null | undefined): number | undefined {
+function gyldigtId(raa: string | undefined): number | undefined {
   if (!raa || !/^\d+$/.test(raa)) {
     return undefined;
   }
@@ -45,8 +45,8 @@ function gyldigtId(raa: string | null | undefined): number | undefined {
   return id > 0 ? id : undefined;
 }
 
-function blandt<T extends string>(vaerdi: string | null, tilladte: readonly T[], standard: T): T {
-  return vaerdi !== null && (tilladte as readonly string[]).indexOf(vaerdi) !== -1
+function blandt<T extends string>(vaerdi: string | undefined, tilladte: readonly T[], standard: T): T {
+  return vaerdi !== undefined && (tilladte as readonly string[]).indexOf(vaerdi) !== -1
     ? (vaerdi as T)
     : standard;
 }
@@ -54,14 +54,17 @@ function blandt<T extends string>(vaerdi: string | null, tilladte: readonly T[],
 /** Laeser visningen. Ugyldige vaerdier giver stille standard. */
 export function laesVisning(url: string): IVisning {
   const { parametre } = delAdresse(url);
+  // URLSearchParams.get giver null for en manglende parameter. Det
+  // oversaettes her en gang, saa resten af modulet kun kender undefined.
+  const hent = (navn: string): string | undefined => parametre.get(navn) ?? undefined;
   const legacy = LEGACY_HASH.exec(url);
-  const raaSag = parametre.get(P_SAG);
+  const raaSag = hent(P_SAG);
 
   return {
-    sag: gyldigtId(raaSag !== null ? raaSag : legacy ? legacy[1] : undefined),
-    udvalg: blandt<Udvalg>(parametre.get(P_STATUS), ALLE_UDVALG, STANDARD_VISNING.udvalg),
-    hvem: blandt<Hvem>(parametre.get(P_HVEM), ALLE_HVEM, STANDARD_VISNING.hvem),
-    soeg: parametre.get(P_SOEG) ?? '',
+    sag: gyldigtId(raaSag !== undefined ? raaSag : legacy ? legacy[1] : undefined),
+    udvalg: blandt<Udvalg>(hent(P_STATUS), ALLE_UDVALG, STANDARD_VISNING.udvalg),
+    hvem: blandt<Hvem>(hent(P_HVEM), ALLE_HVEM, STANDARD_VISNING.hvem),
+    soeg: hent(P_SOEG) ?? '',
   };
 }
 
