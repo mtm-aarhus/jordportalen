@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Card, Link, Text, Title3, tokens } from '@fluentui/react-components';
 import { IAdresse, IBilag, IKontakt, ISag } from '../../domaene/typer';
 import { sikkerUrl } from '../../domaene/sikkerhed';
+import { ejendomsDetaljer } from '../../domaene/formatering';
 
 export interface IMetadataProps {
   sag: ISag;
@@ -62,9 +63,11 @@ export const Metadata: React.FunctionComponent<IMetadataProps> = ({
           <Text block weight="semibold">
             {a.Adresse}
           </Text>
-          <Text size={200} block>
-            Matrikel {a.Matrikel} · Lokalitet {a.LokalitetsNummer}
-          </Text>
+          {ejendomsDetaljer(a.Matrikel, a.LokalitetsNummer) && (
+            <Text size={200} block>
+              {ejendomsDetaljer(a.Matrikel, a.LokalitetsNummer)}
+            </Text>
+          )}
         </div>
       ))}
     </Card>
