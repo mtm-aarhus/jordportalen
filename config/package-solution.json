@@ -3,7 +3,7 @@
   "solution": {
     "name": "jordportalen-client-side-solution",
     "id": "105e2bf8-0f61-46ce-92cc-af5824fce1cb",
-    "version": "1.0.0.0",
+    "version": "1.0.1.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
@@ -30,7 +30,7 @@
         "title": "jordportalen Feature",
         "description": "The feature that activates elements of the jordportalen solution.",
         "id": "a52eee56-a117-4478-a0b2-bd0af74083b6",
-        "version": "1.0.0.0"
+        "version": "1.0.1.0"
       }
     ]
   },

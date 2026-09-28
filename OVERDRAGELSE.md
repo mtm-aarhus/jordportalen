@@ -21,7 +21,7 @@ som standard headeren `odata=nometadata`, og så følger ETag'en ikke med. Er de
 
 Sådan afgør du det:
 
-1. Kør `npm run serve` og åbn workbench
+1. Kør `npm start` og åbn `https://aarhuskommune.sharepoint.com/teams/Jordportalen/_layouts/15/workbench.aspx`
 2. Åbn browserkonsollen
 3. Åbn en sag
 4. Se efter om et `etag`-felt har en værdi
@@ -63,7 +63,7 @@ Gentag for `P8Adresser`, `P8Kontakter`, `P8Vedhaeftninger`, `P8Log`, `P8Noter`,
 PnP PowerShell kan ikke forbinde i tenanten — appen er ikke godkendt. `deploy_spfx.ps1`
 virker derfor ikke endnu. Upload i browseren i stedet:
 
-1. `npm run build && npm run package-solution -- --ship`
+1. `npm run build` (bygger og pakker til produktion)
 2. Åbn App Catalog
 3. Upload `sharepoint/solution/jordportalen.sppkg`
 4. Vælg **Implementér**
@@ -91,6 +91,11 @@ Se `DEPLOY.md` for detaljer, herunder at versionsnummeret skal hæves **to stede
 | 11 | Upload en fil | Mappen `sag-<id>` oprettes i `P8Dokumenter` første gang |
 | 12 | Tilføj et link | Knappen er deaktiveret, indtil URL'en starter med `http` |
 | 13 | Send dig selv et deep-link | Linket åbner den rigtige sag fra en kold side-indlæsning |
+| 14 | Filtrér på `Afventer`, åbn en sag, brug **browserens** tilbage-knap | Oversigten kommer tilbage med filtret. Notér om siden genindlæses helt — i så fald reagerer SharePoints navigation på `popstate` (se spec for brugeroplevelse, afsnit 2) |
+| 15 | Sæt et filter og genindlæs siden | Filtret står der stadig |
+| 16 | Åbn et sagslink i en ny fane, klik "← Oversigten" | Oversigten med standardfiltre — siden forlades ikke |
+| 17 | Klik hvert nøgletalskort | Listen og markeringen passer, og tallene står stille |
+| 18 | "Kopiér link", indsæt i en ny fane | Samme sag åbner, uden de filtre man selv stod med |
 
 Punkt 13 er værd at tage alvorligt. Deep-linket brugte oprindeligt en forkert
 URL-sammensætning, der gav 404 på hvert eneste link — rettet, men kun verificeret i
