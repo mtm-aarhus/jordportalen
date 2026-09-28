@@ -3,7 +3,6 @@
 ## Byg pakken
 
     npm run build
-    npm run package-solution -- --ship
 
 Resultatet ligger i `sharepoint/solution/jordportalen.sppkg`.
 

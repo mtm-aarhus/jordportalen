@@ -25,7 +25,7 @@ browser — ingen subagent har kunnet logge ind i SharePoint.
 slået fra, uden at noget fejler.**
 
 Fuld fremgangsmåde i [`OVERDRAGELSE.md`](./OVERDRAGELSE.md), punkt 1. Kort: kør
-`npm run serve`, åbn en sag, og se efter om `etag` har en værdi. Er den tom, ligger en
+`npm start` og workbench på Jordportalen-sitet, åbn en sag, og se efter om `etag` har en værdi. Er den tom, ligger en
 færdig alternativ implementering udkommenteret i `SagService.ts`.
 
 Bekræft derefter med to-faner-testen: tag samme ledige sag i to faner. Den anden skal
