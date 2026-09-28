@@ -6,7 +6,7 @@ import { MountNodeProvider } from './faelles/MountNode';
 import { Dashboard } from './dashboard/Dashboard';
 import { SagDetalje } from './detalje/SagDetalje';
 import { IVisning, STANDARD_VISNING } from '../domaene/dashboard';
-import { byggUrl, historikTilstand, laesVisning, tilbageHandling } from '../utils/visning';
+import { byggUrl, laesVisning, skrivHistorik, tilbageHandling } from '../utils/visning';
 import { LogService } from '../services/LogService';
 import { SagService } from '../services/SagService';
 import { NoteService } from '../services/NoteService';
@@ -60,13 +60,10 @@ const Jordportalen: React.FunctionComponent<IJordportalenProps> = ({ sp, sideUrl
    * erstatter trinnet, saa tilbage-knappen ikke traeder gennem hvert tastetryk.
    */
   const naviger = React.useCallback((ny: IVisning, maade: Maade) => {
-    const url = byggUrl(window.location.href, ny);
-    if (maade === 'nyt-trin') {
-      window.history.pushState(historikTilstand(window.history.state), '', url);
-    } else {
-      window.history.replaceState(window.history.state, '', url);
-    }
+    // Visningen foerst: afviser browseren historikkaldet (se skrivHistorik),
+    // skal soegefeltet og filtrene stadig reagere.
     setVisning(ny);
+    skrivHistorik(window.history, byggUrl(window.location.href, ny), maade);
   }, []);
 
   const aendrFiltre = React.useCallback(

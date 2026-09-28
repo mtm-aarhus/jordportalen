@@ -122,3 +122,32 @@ export function tilbageHandling(historyState: unknown): 'gaa-tilbage' | 'nyt-tri
     (historyState as Record<string, unknown>)[HISTORIK_MARKOER] === true;
   return erPortalens ? 'gaa-tilbage' : 'nyt-trin';
 }
+
+/** Den del af window.history, skrivHistorik bruger. Et interface, saa det kan testes. */
+export interface IHistorik {
+  state: unknown;
+  pushState(state: unknown, titel: string, url: string): void;
+  replaceState(state: unknown, titel: string, url: string): void;
+}
+
+/**
+ * Skriver adressen i browserens historik uden at kunne kaste.
+ *
+ * Firefox og Safari kaster SecurityError ved mange kald paa kort tid, og
+ * soegefeltet erstatter trinnet ved hvert tastetryk. En fejl her maa ikke
+ * stoppe visningen - saa staar kun adressen et oejeblik bagud.
+ *
+ * @returns false hvis browseren afviste kaldet.
+ */
+export function skrivHistorik(historik: IHistorik, url: string, maade: 'nyt-trin' | 'erstat'): boolean {
+  try {
+    if (maade === 'nyt-trin') {
+      historik.pushState(historikTilstand(historik.state), '', url);
+    } else {
+      historik.replaceState(historik.state, '', url);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
