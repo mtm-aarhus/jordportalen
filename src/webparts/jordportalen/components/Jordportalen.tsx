@@ -6,8 +6,8 @@ import { MountNodeProvider } from './faelles/MountNode';
 import { Dashboard } from './dashboard/Dashboard';
 import { SagDetalje } from './detalje/SagDetalje';
 import { byggSagLink, parseSagId } from '../utils/deepLink';
-import { IVisning } from '../domaene/dashboard';
-import { laesVisning } from '../utils/visning';
+import { IVisning, STANDARD_VISNING } from '../domaene/dashboard';
+import { byggUrl, laesVisning } from '../utils/visning';
 import { LogService } from '../services/LogService';
 import { SagService } from '../services/SagService';
 import { NoteService } from '../services/NoteService';
@@ -74,6 +74,7 @@ const Jordportalen: React.FunctionComponent<IJordportalenProps> = ({ sp, sideUrl
                 sagId={valgtSagId}
                 tjenester={tjenester}
                 brugerId={brugerId}
+                delingsLink={byggUrl(sideUrl, { ...STANDARD_VISNING, sag: valgtSagId })}
                 onTilbage={() => vaelgSag(undefined)}
               />
             )}
