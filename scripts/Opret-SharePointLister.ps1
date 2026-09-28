@@ -3,7 +3,7 @@
     Opretter Jordportalens ni SharePoint-lister med korrekte kolonnetyper.
 
 .DESCRIPTION
-    Svarer en-til-en til SHAREPOINT-LISTER.md. Scriptet er idempotent: det tjekker
+    Scriptet er selv beskrivelsen af listerne. Det er idempotent: det tjekker
     om hver liste og hver kolonne findes, foer den oprettes, saa det kan koeres igen
     uden at lave dubletter.
 

@@ -1,7 +1,7 @@
 /**
  * Datatyper og listenavne for Jordportalen.
  *
- * Listenavne og feltnavne er laast i SHAREPOINT-LISTER.md. De er rene ASCII,
+ * Listenavne og feltnavne svarer til scripts/Opret-SharePointLister.ps1. De er rene ASCII,
  * fordi SharePoint koder specialtegn om i det interne kolonnenavn og afkorter
  * ved 32 tegn - og det interne navn er laast fra oprettelsen.
  *
