@@ -2,10 +2,10 @@
 
 Anvisning til manuel oprettelse af de ni lister, som §8-løsningen bygger på.
 
-**Site:** `https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard`
+**Site:** `https://aarhuskommune.sharepoint.com/teams/Jordportalen`
 
 Frontend-siden er
-[§8-Ansøgninger – Jord og Grundvand](https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard/SitePages/%C2%A78-Ans%C3%B8gninger---Jord-og-Grundvand.aspx).
+[§8-Ansøgninger – Jord og Grundvand](https://aarhuskommune.sharepoint.com/teams/Jordportalen/SitePages/%C2%A78-Ans%C3%B8gninger---Jord-og-Grundvand.aspx).
 
 To systemer deler disse lister:
 
@@ -325,7 +325,7 @@ Det sidste punkt er det vigtigste, fordi en fejl her ikke giver nogen fejlmeddel
 kan køres i browserens adresselinje på en liste ad gangen:
 
 ```
-https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard/_api/web/lists/getbytitle('P8Ansogninger')/fields?$select=Title,InternalName,TypeAsString&$filter=Hidden eq false and ReadOnlyField eq false
+https://aarhuskommune.sharepoint.com/teams/Jordportalen/_api/web/lists/getbytitle('P8Ansogninger')/fields?$select=Title,InternalName,TypeAsString&$filter=Hidden eq false and ReadOnlyField eq false
 ```
 
 Kig efter interne navne med `_x` i sig, navne der er hugget af ved 32 tegn, eller navne med et

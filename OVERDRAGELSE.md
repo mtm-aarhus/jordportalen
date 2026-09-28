@@ -43,7 +43,7 @@ Den test er den eneste, der beviser, at kæden virker hele vejen igennem.
 Kør én gang pr. liste i browserens adresselinje:
 
 ```
-https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard/_api/web/lists/getbytitle('P8Ansogninger')/fields?$select=Title,InternalName,TypeAsString&$filter=Hidden eq false and ReadOnlyField eq false
+https://aarhuskommune.sharepoint.com/teams/Jordportalen/_api/web/lists/getbytitle('P8Ansogninger')/fields?$select=Title,InternalName,TypeAsString&$filter=Hidden eq false and ReadOnlyField eq false
 ```
 
 `Title` og `InternalName` skal være identiske. Kig efter `_x` i navnene, navne hugget
