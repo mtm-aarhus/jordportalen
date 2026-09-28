@@ -6,6 +6,8 @@ import { MountNodeProvider } from './faelles/MountNode';
 import { Dashboard } from './dashboard/Dashboard';
 import { SagDetalje } from './detalje/SagDetalje';
 import { byggSagLink, parseSagId } from '../utils/deepLink';
+import { IVisning } from '../domaene/dashboard';
+import { laesVisning } from '../utils/visning';
 import { LogService } from '../services/LogService';
 import { SagService } from '../services/SagService';
 import { NoteService } from '../services/NoteService';
@@ -31,6 +33,7 @@ const Jordportalen: React.FunctionComponent<IJordportalenProps> = ({ sp, sideUrl
   const [valgtSagId, setValgtSagId] = React.useState<number | undefined>(() =>
     parseSagId(window.location.href)
   );
+  const [visning, setVisning] = React.useState<IVisning>(() => laesVisning(window.location.href));
   const [brugerId, setBrugerId] = React.useState<number | undefined>(undefined);
   const [fejl, setFejl] = React.useState<string | undefined>(undefined);
 
@@ -59,7 +62,13 @@ const Jordportalen: React.FunctionComponent<IJordportalenProps> = ({ sp, sideUrl
         {brugerId !== undefined && (
           <div>
             {valgtSagId === undefined ? (
-              <Dashboard sag={tjenester.sag} brugerId={brugerId} onVaelgSag={vaelgSag} />
+              <Dashboard
+                sag={tjenester.sag}
+                brugerId={brugerId}
+                visning={visning}
+                onVisning={setVisning}
+                onVaelgSag={vaelgSag}
+              />
             ) : (
               <SagDetalje
                 sagId={valgtSagId}

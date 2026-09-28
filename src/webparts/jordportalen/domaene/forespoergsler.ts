@@ -1,5 +1,3 @@
-import { SagStatus } from './typer';
-
 /**
  * OData-filtre som rene funktioner, saa de kan testes uden SharePoint.
  *
@@ -36,29 +34,4 @@ export function sagIdFilter(sagId: number): string {
 
 export function uuidFilter(uuid: string): string {
   return `SubmissionUUID eq ${tekst(uuid)}`;
-}
-
-export interface IDashboardFilter {
-  status?: SagStatus;
-  ansvarligId?: number;
-  kunLedige?: boolean;
-}
-
-export function dashboardFilter(f: IDashboardFilter): string {
-  const dele: string[] = [];
-
-  if (f.status) {
-    dele.push(`Status eq ${tekst(f.status)}`);
-  }
-
-  // Ledig og "mine sager" udelukker hinanden. Ledig vinder, saa filtret ikke
-  // kan ende med at spoerge efter sager der baade er mine og ledige - det ville
-  // altid give nul raekker og ligne en fejl.
-  if (f.kunLedige) {
-    dele.push('AnsvarligId eq null');
-  } else if (typeof f.ansvarligId === 'number') {
-    dele.push(`AnsvarligId eq ${f.ansvarligId}`);
-  }
-
-  return dele.join(' and ');
 }
