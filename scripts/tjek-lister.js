@@ -1,5 +1,6 @@
 /*
- * Tjekker de ni §8-lister paa Jordportalen-sitet mod SHAREPOINT-LISTER.md.
+ * Tjekker de ni §8-lister paa Jordportalen-sitet mod det skema, koden forventer
+ * (samme skema som scripts/Opret-SharePointLister.ps1 opretter).
  *
  * Koeres i browserens konsol (F12 -> Konsol) paa en hvilken som helst side paa
  * https://aarhuskommune.sharepoint.com, mens man er logget ind. Scriptet LAESER
@@ -226,7 +227,7 @@
     console.table(advarsler);
   }
   if (!fejl.length && !advarsler.length) {
-    console.log('%cAlt stemmer med SHAREPOINT-LISTER.md.', 'color:#080;font-weight:bold');
+    console.log('%cAlt stemmer med det forventede skema.', 'color:#080;font-weight:bold');
   }
   return { fejl, advarsler };
 })();

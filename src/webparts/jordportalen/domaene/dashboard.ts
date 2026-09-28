@@ -5,7 +5,7 @@ import { erAfsluttet } from './statusregler';
  * Dashboardets visning og filtrering som rene funktioner.
  *
  * Alle sager hentes én gang, og filtreringen sker her i browseren. Det
- * forudsaetter hoejst et par tusind sager - se spec'en for brugeroplevelse.
+ * forudsaetter hoejst et par tusind sager (forventet ca. 500 om aaret).
  */
 
 export type Udvalg = 'aktive' | 'afsluttede' | 'alle' | SagStatus;
