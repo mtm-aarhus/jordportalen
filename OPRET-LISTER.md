@@ -40,7 +40,7 @@ Install-Module PnP.PowerShell -Scope CurrentUser
 ### 2. Forbind til sitet
 
 ```powershell
-$site = "https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard"
+$site = "https://aarhuskommune.sharepoint.com/teams/Jordportalen"
 
 # Cookie-baseret login. Kraever ingen app-registrering i tenanten.
 try {

@@ -13,7 +13,7 @@ SharePoints `SendEmail`-API er udfaset af Microsoft. Derfor dette flow.
 
 ## Trigger
 
-- Site Address: `https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard`
+- Site Address: `https://aarhuskommune.sharepoint.com/teams/Jordportalen`
 - List Name: `P8Log`
 
 ## Betingelse
@@ -34,7 +34,7 @@ sammenhæng, der bruger feltet, uden at flowet skal ændres.
 - To: `Current item Email`
 - Subject: `Du er tagget i en §8-sag`
 - Body: link til sagen, bygget som
-  `https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard/SitePages/§8-Ansøgninger---Jord-og-Grundvand.aspx?sag=` efterfulgt af `SagId` fra triggeren.
+  `https://aarhuskommune.sharepoint.com/teams/Jordportalen/SitePages/§8-Ansøgninger---Jord-og-Grundvand.aspx?sag=` efterfulgt af `SagId` fra triggeren.
 
 Brug `?sag=`, ikke `#sag-`. Et hash i URL'en crasher SharePoints side-bootstrap,
 når linket åbnes fra en mail.

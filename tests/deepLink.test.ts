@@ -1,6 +1,6 @@
 import { byggSagLink, parseSagId } from '../src/webparts/jordportalen/utils/deepLink';
 
-const SIDE = 'https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard/SitePages/Jord.aspx';
+const SIDE = 'https://aarhuskommune.sharepoint.com/teams/Jordportalen/SitePages/Jord.aspx';
 
 describe('byggSagLink', () => {
   it('bruger query-parameter, ikke hash', () => {

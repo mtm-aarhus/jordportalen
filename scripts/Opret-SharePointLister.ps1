@@ -35,11 +35,11 @@
 
 .EXAMPLE
     # Test med en liste foerst
-    .\Opret-SharePointLister.ps1 -SiteUrl "https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard" -Lister P8Opgaver
+    .\Opret-SharePointLister.ps1 -SiteUrl "https://aarhuskommune.sharepoint.com/teams/Jordportalen" -Lister P8Opgaver
 
 .EXAMPLE
     # Opret dem alle
-    .\Opret-SharePointLister.ps1 -SiteUrl "https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard"
+    .\Opret-SharePointLister.ps1 -SiteUrl "https://aarhuskommune.sharepoint.com/teams/Jordportalen"
 
 .EXAMPLE
     # Kontroller bagefter

@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - **Node ≥ 22.14.0**, npm 10.x. Bekræftet installeret.
-- **SharePoint-site:** `https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard`
+- **SharePoint-site:** `https://aarhuskommune.sharepoint.com/teams/Jordportalen`
 - **Listenavne og kolonnenavne** er låst i `SHAREPOINT-LISTER.md` og må ikke afvige. De er rene ASCII uden æøå; **valgmuligheder** indeholder derimod danske tegn (`Rådgiver`, `Høring`) og skal matche byte for byte.
 - **Komponenter kalder aldrig PnPjs direkte.** Kun services.
 - **Paginering sker med PnPjs' async-iterator, aldrig med `.skip()`.** Paa en
@@ -35,7 +35,7 @@
 De ni SharePoint-lister skal være oprettet, og de interne kolonnenavne skal være bekræftet identiske med visningsnavnene. Kør i browserens adresselinje, én liste ad gangen:
 
 ```
-https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard/_api/web/lists/getbytitle('P8Ansogninger')/fields?$select=Title,InternalName,TypeAsString&$filter=Hidden eq false and ReadOnlyField eq false
+https://aarhuskommune.sharepoint.com/teams/Jordportalen/_api/web/lists/getbytitle('P8Ansogninger')/fields?$select=Title,InternalName,TypeAsString&$filter=Hidden eq false and ReadOnlyField eq false
 ```
 
 Afviger et internt navn fra visningsnavnet, så stop. Koden skriver til interne navne, og en uoverensstemmelse giver ingen fejl — værdien forsvinder bare ud af syne.
@@ -1032,7 +1032,7 @@ git commit -m "OData-filtre med forfatterfilter paa noter"
 ```typescript
 import { byggSagLink, parseSagId } from '../src/webparts/jordportalen/utils/deepLink';
 
-const SIDE = 'https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard/SitePages/Jord.aspx';
+const SIDE = 'https://aarhuskommune.sharepoint.com/teams/Jordportalen/SitePages/Jord.aspx';
 
 describe('byggSagLink', () => {
   it('bruger query-parameter, ikke hash', () => {
@@ -3833,7 +3833,7 @@ SharePoints `SendEmail`-API er udfaset af Microsoft. Derfor dette flow.
 
 ## Trigger
 
-- Site Address: `https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard`
+- Site Address: `https://aarhuskommune.sharepoint.com/teams/Jordportalen`
 - List Name: `P8Log`
 
 ## Betingelse
@@ -3854,7 +3854,7 @@ sammenhæng, der bruger feltet, uden at flowet skal ændres.
 - To: `Current item Email`
 - Subject: `Du er tagget i en §8-sag`
 - Body: link til sagen, bygget som
-  `https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard/SitePages/§8-Ansøgninger---Jord-og-Grundvand.aspx?sag=` efterfulgt af `SagId` fra triggeren.
+  `https://aarhuskommune.sharepoint.com/teams/Jordportalen/SitePages/§8-Ansøgninger---Jord-og-Grundvand.aspx?sag=` efterfulgt af `SagId` fra triggeren.
 
 Brug `?sag=`, ikke `#sag-`. Et hash i URL'en crasher SharePoints side-bootstrap,
 når linket åbnes fra en mail.

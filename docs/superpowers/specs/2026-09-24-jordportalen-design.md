@@ -62,7 +62,7 @@ Fluent UI React v9, PnPjs v4, Node ≥ 22.14.
 
 ### Site
 
-`https://aarhuskommune.sharepoint.com/teams/NaturogMiljDashboard`
+`https://aarhuskommune.sharepoint.com/teams/Jordportalen`
 
 ---
 
