@@ -2,6 +2,7 @@ import {
   byggUrl,
   historikTilstand,
   laesVisning,
+  skrivHistorik,
   tilbageHandling,
 } from '../src/webparts/jordportalen/utils/visning';
 import { IVisning, STANDARD_VISNING } from '../src/webparts/jordportalen/domaene/dashboard';
@@ -133,5 +134,43 @@ describe('historikTilstand og tilbageHandling', () => {
     expect(tilbageHandling(undefined)).toBe('nyt-trin');
     expect(tilbageHandling({ spNav: 1 })).toBe('nyt-trin');
     expect(tilbageHandling({ jordportalen: 'ja' })).toBe('nyt-trin');
+  });
+});
+
+describe('skrivHistorik', () => {
+  type Kald = { metode: string; state: unknown; url: string };
+
+  function falskHistorik(kaster: boolean) {
+    const kald: Kald[] = [];
+    const registrer = (metode: string) => (state: unknown, _titel: string, url: string): void => {
+      if (kaster) {
+        throw new Error('SecurityError: Too many calls to Location or History APIs');
+      }
+      kald.push({ metode, state, url });
+    };
+    return {
+      kald,
+      historik: { state: { spNav: 1 }, pushState: registrer('push'), replaceState: registrer('replace') },
+    };
+  }
+
+  it('laegger et nyt trin med portalens markoer oven i den eksisterende state', () => {
+    const { kald, historik } = falskHistorik(false);
+    expect(skrivHistorik(historik, '/side?sag=1', 'nyt-trin')).toBe(true);
+    expect(kald).toEqual([{ metode: 'push', state: { spNav: 1, jordportalen: true }, url: '/side?sag=1' }]);
+  });
+
+  it('erstatter trinnet og sender den eksisterende state uaendret videre', () => {
+    const { kald, historik } = falskHistorik(false);
+    expect(skrivHistorik(historik, '/side?q=a', 'erstat')).toBe(true);
+    expect(kald).toEqual([{ metode: 'replace', state: { spNav: 1 }, url: '/side?q=a' }]);
+  });
+
+  it('kaster ikke naar browseren afviser kaldet, men melder det tilbage', () => {
+    // Firefox og Safari kaster SecurityError ved mange kald paa kort tid -
+    // fx replaceState ved hvert tastetryk i soegefeltet.
+    const { historik } = falskHistorik(true);
+    expect(() => skrivHistorik(historik, '/side', 'erstat')).not.toThrow();
+    expect(skrivHistorik(historik, '/side', 'nyt-trin')).toBe(false);
   });
 });
