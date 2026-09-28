@@ -111,7 +111,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
       {indlaeser ? (
         <Spinner label="Henter sager..." />
       ) : (
-        <SagsTabel sager={synlige} onVaelgSag={onVaelgSag} />
+        <SagsTabel sager={synlige} onVaelgSag={onVaelgSag} tomBesked="Ingen sager matcher" />
       )}
     </div>
   );
