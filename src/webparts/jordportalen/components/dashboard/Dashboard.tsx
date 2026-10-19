@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MessageBar, Spinner } from '@fluentui/react-components';
+import { makeStyles, MessageBar, Spinner, Text, Title2, tokens } from '@fluentui/react-components';
 
 import { SagService } from '../../services/SagService';
 import { ISag } from '../../domaene/typer';
@@ -16,6 +16,24 @@ export interface IDashboardProps {
   onVaelgSag: (id: number) => void;
 }
 
+const useStyles = makeStyles({
+  hoved: {
+    display: 'flex',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: tokens.spacingHorizontalM,
+    marginBottom: tokens.spacingVerticalL,
+  },
+  antal: {
+    color: tokens.colorNeutralForeground3,
+    fontVariantNumeric: 'tabular-nums',
+  },
+  besked: {
+    marginBottom: tokens.spacingVerticalM,
+  },
+});
+
 export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
   sag,
   brugerId,
@@ -23,6 +41,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
   onVisning,
   onVaelgSag,
 }) => {
+  const styles = useStyles();
   const [sager, setSager] = React.useState<ISag[]>([]);
   const [afkortet, setAfkortet] = React.useState(false);
   const [indlaeser, setIndlaeser] = React.useState(true);
@@ -65,11 +84,20 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
 
   return (
     <div>
-      {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
+      <div className={styles.hoved}>
+        <Title2 as="h2">§8 Ansøgninger</Title2>
+        {!indlaeser && !fejl && (
+          <Text className={styles.antal}>
+            Viser {synlige.length.toLocaleString('da-DK')} af {sager.length.toLocaleString('da-DK')}
+          </Text>
+        )}
+      </div>
+
+      {fejl && <MessageBar intent="error" className={styles.besked}>{fejl}</MessageBar>}
 
       {/* Afkortning SKAL vises. Idéportalen og Opgaveportalen afskaerer tavst. */}
       {afkortet && (
-        <MessageBar intent="warning">
+        <MessageBar intent="warning" className={styles.besked}>
           Der er flere sager, end der kan vises. Brug filtrene for at indsnævre listen.
         </MessageBar>
       )}

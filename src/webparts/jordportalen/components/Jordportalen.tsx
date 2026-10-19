@@ -1,5 +1,12 @@
 import * as React from 'react';
-import { FluentProvider, webLightTheme, Spinner, MessageBar } from '@fluentui/react-components';
+import {
+  FluentProvider,
+  makeStyles,
+  MessageBar,
+  Spinner,
+  tokens,
+  webLightTheme,
+} from '@fluentui/react-components';
 
 import { IJordportalenProps } from './IJordportalenProps';
 import { MountNodeProvider } from './faelles/MountNode';
@@ -17,7 +24,22 @@ import { ProfilService } from '../services/ProfilService';
 
 type Maade = 'nyt-trin' | 'erstat';
 
+const useStyles = makeStyles({
+  // Fylder kolonnen helt ud, men bliver ikke uendeligt bred i en sektion
+  // med fuld bredde. Indholdet centreres saa i stedet.
+  rod: {
+    boxSizing: 'border-box',
+    width: '100%',
+    maxWidth: '1280px',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    paddingTop: tokens.spacingVerticalM,
+    paddingBottom: tokens.spacingVerticalXXL,
+  },
+});
+
 const Jordportalen: React.FunctionComponent<IJordportalenProps> = ({ sp, sideUrl }) => {
+  const styles = useStyles();
   const tjenester = React.useMemo(() => {
     const log = new LogService(sp);
     return {
@@ -88,11 +110,11 @@ const Jordportalen: React.FunctionComponent<IJordportalenProps> = ({ sp, sideUrl
   return (
     <FluentProvider theme={webLightTheme}>
       <MountNodeProvider>
-        {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
-        {brugerId === undefined && !fejl && <Spinner label="Indlæser..." />}
-        {brugerId !== undefined && (
-          <div>
-            {visning.sag === undefined ? (
+        <div className={styles.rod}>
+          {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
+          {brugerId === undefined && !fejl && <Spinner label="Indlæser..." />}
+          {brugerId !== undefined &&
+            (visning.sag === undefined ? (
               <Dashboard
                 sag={tjenester.sag}
                 brugerId={brugerId}
@@ -109,9 +131,8 @@ const Jordportalen: React.FunctionComponent<IJordportalenProps> = ({ sp, sideUrl
                 delingsLink={byggUrl(sideUrl, { ...STANDARD_VISNING, sag: visning.sag })}
                 onTilbage={tilOversigten}
               />
-            )}
-          </div>
-        )}
+            ))}
+        </div>
       </MountNodeProvider>
     </FluentProvider>
   );
