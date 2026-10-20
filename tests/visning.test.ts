@@ -95,6 +95,17 @@ describe('laesVisning - filtre', () => {
   });
 });
 
+describe('layout i adressen', () => {
+  it('skriver vis=kanban og intet for tabel', () => {
+    expect(byggUrl(SIDE, med({ layout: 'kanban' }))).toBe(`${SIDE}?vis=kanban`);
+    expect(byggUrl(SIDE, med({ layout: 'tabel' }))).toBe(SIDE);
+  });
+
+  it('giver tabel (udeladt) ved en ukendt vaerdi', () => {
+    expect(laesVisning(`${SIDE}?vis=gitter`).layout).toBeUndefined();
+  });
+});
+
 describe('rundtur gennem adressen', () => {
   const tilfaelde: IVisning[] = [
     STANDARD_VISNING,
@@ -102,6 +113,8 @@ describe('rundtur gennem adressen', () => {
     med({ udvalg: 'Afventer', hvem: 'mine', soeg: 'Ringvej 12' }),
     med({ soeg: 'Nørre Allé & Co.' }),
     med({ udvalg: 'alle', hvem: 'ledige', sag: 5, soeg: 'æøå ÆØÅ' }),
+    med({ layout: 'kanban' }),
+    med({ layout: 'kanban', udvalg: 'alle', hvem: 'mine' }),
   ];
 
   it.each(tilfaelde)('%o overlever byggUrl -> laesVisning', (v) => {

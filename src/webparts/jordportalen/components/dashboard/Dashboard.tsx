@@ -1,12 +1,13 @@
 import * as React from 'react';
-import { makeStyles, MessageBar, Spinner, Text, Title2, tokens } from '@fluentui/react-components';
+import { makeStyles, MessageBar, Spinner, Text, Title2, ToggleButton, tokens } from '@fluentui/react-components';
 
 import { SagService } from '../../services/SagService';
 import { ISag } from '../../domaene/typer';
-import { erStandard, filtrerSager, IVisning, STANDARD_VISNING } from '../../domaene/dashboard';
+import { erStandard, filtrerSager, IVisning, kanbanKolonner, Layout, nulstilFiltre } from '../../domaene/dashboard';
 import { KpiKort } from './KpiKort';
 import { Filtre } from './Filtre';
 import { SagsTabel } from './SagsTabel';
+import { KanbanTavle } from './KanbanTavle';
 
 export interface IDashboardProps {
   sag: SagService;
@@ -25,9 +26,27 @@ const useStyles = makeStyles({
     gap: tokens.spacingHorizontalM,
     marginBottom: tokens.spacingVerticalL,
   },
+  hoejre: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalL,
+  },
   antal: {
     color: tokens.colorNeutralForeground3,
     fontVariantNumeric: 'tabular-nums',
+  },
+  // Samme samlede kontrol som Alle/Ledige/Mine i filtrene.
+  segment: {
+    display: 'flex',
+    '& > button:not(:first-child)': {
+      marginLeft: '-1px',
+      borderTopLeftRadius: 0,
+      borderBottomLeftRadius: 0,
+    },
+    '& > button:not(:last-child)': {
+      borderTopRightRadius: 0,
+      borderBottomRightRadius: 0,
+    },
   },
   besked: {
     marginBottom: tokens.spacingVerticalM,
@@ -80,17 +99,29 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
   );
 
   const standard = erStandard(visning);
-  const nulstil = (): void => onVisning({ ...STANDARD_VISNING });
+  const nulstil = (): void => onVisning(nulstilFiltre(visning));
+  const layout: Layout = visning.layout ?? 'tabel';
+  const saetLayout = (l: Layout): void => onVisning({ ...visning, layout: l === 'tabel' ? undefined : l });
 
   return (
     <div>
       <div className={styles.hoved}>
         <Title2 as="h2">§8 Ansøgninger</Title2>
-        {!indlaeser && !fejl && (
-          <Text className={styles.antal}>
-            Viser {synlige.length.toLocaleString('da-DK')} af {sager.length.toLocaleString('da-DK')}
-          </Text>
-        )}
+        <div className={styles.hoejre}>
+          {!indlaeser && !fejl && (
+            <Text className={styles.antal}>
+              Viser {synlige.length.toLocaleString('da-DK')} af {sager.length.toLocaleString('da-DK')}
+            </Text>
+          )}
+          <div role="group" aria-label="Visning" className={styles.segment}>
+            <ToggleButton size="small" checked={layout === 'tabel'} onClick={() => saetLayout('tabel')}>
+              Tabel
+            </ToggleButton>
+            <ToggleButton size="small" checked={layout === 'kanban'} onClick={() => saetLayout('kanban')}>
+              Kanban
+            </ToggleButton>
+          </div>
+        </div>
       </div>
 
       {fejl && <MessageBar intent="error" className={styles.besked}>{fejl}</MessageBar>}
@@ -114,6 +145,8 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
 
       {indlaeser ? (
         <Spinner label="Henter sager..." />
+      ) : layout === 'kanban' ? (
+        <KanbanTavle kolonner={kanbanKolonner(synlige, visning.udvalg)} onVaelgSag={onVaelgSag} />
       ) : (
         <SagsTabel
           sager={synlige}

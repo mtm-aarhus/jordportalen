@@ -4,7 +4,9 @@ import {
   erStandard,
   filtrerSager,
   IVisning,
+  kanbanKolonner,
   kortGenvej,
+  nulstilFiltre,
   STANDARD_VISNING,
   taelNoegletal,
 } from '../src/webparts/jordportalen/domaene/dashboard';
@@ -177,5 +179,54 @@ describe('erStandard', () => {
     expect(erStandard(visning({ udvalg: 'alle' }))).toBe(false);
     expect(erStandard(visning({ hvem: 'mine' }))).toBe(false);
     expect(erStandard(visning({ soeg: 'x' }))).toBe(false);
+  });
+});
+
+describe('kanbanKolonner', () => {
+  const sager = [
+    sag({ Id: 1, Status: 'Ny' }),
+    sag({ Id: 2, Status: 'Afventer' }),
+    sag({ Id: 3, Status: 'Ny' }),
+  ];
+
+  it('giver en kolonne pr. aktiv status i fast raekkefoelge, ogsaa tomme', () => {
+    const k = kanbanKolonner(sager, 'aktive');
+    expect(k.map((x) => x.status)).toEqual(['Ny', 'Under behandling', 'Afventer']);
+    expect(k[0].sager.map((s) => s.Id)).toEqual([1, 3]);
+    expect(k[1].sager).toEqual([]);
+  });
+
+  it('viser kun de afsluttede kolonner for udvalget afsluttede', () => {
+    expect(kanbanKolonner([], 'afsluttede').map((x) => x.status)).toEqual(['Afgjort', 'Afvist']);
+  });
+
+  it('viser alle fem for udvalget alle', () => {
+    expect(kanbanKolonner([], 'alle')).toHaveLength(5);
+  });
+
+  it('viser kun den valgte status', () => {
+    expect(kanbanKolonner([], 'Afventer').map((x) => x.status)).toEqual(['Afventer']);
+  });
+
+  it('giver en ukendt status sin egen kolonne, saa sagen ikke forsvinder', () => {
+    const ukendt = sag({ Id: 9, Status: 'Henlagt' as SagStatus });
+    const k = kanbanKolonner([ukendt], 'aktive');
+    expect(k[k.length - 1].status).toBe('Henlagt');
+    expect(k[k.length - 1].sager.map((s) => s.Id)).toEqual([9]);
+  });
+});
+
+describe('layout', () => {
+  it('bevares naar et noegletalskort vaelges', () => {
+    expect(kortGenvej('mine', visning({ layout: 'kanban' })).layout).toBe('kanban');
+  });
+
+  it('bevares naar filtrene nulstilles', () => {
+    const v = nulstilFiltre(visning({ layout: 'kanban', udvalg: 'alle', soeg: 'x' }));
+    expect(v).toEqual({ ...STANDARD_VISNING, layout: 'kanban' });
+  });
+
+  it('taeller ikke med i om visningen er standard', () => {
+    expect(erStandard(visning({ layout: 'kanban' }))).toBe(true);
   });
 });

@@ -10,7 +10,7 @@ import {
   tokens,
 } from '@fluentui/react-components';
 import { ALLE_STATUS } from '../../domaene/typer';
-import { erStandard, Hvem, IVisning, STANDARD_VISNING, Udvalg } from '../../domaene/dashboard';
+import { erStandard, Hvem, IVisning, nulstilFiltre, Udvalg } from '../../domaene/dashboard';
 import { useMountNode } from '../faelles/MountNode';
 
 export interface IFiltreProps {
@@ -118,7 +118,7 @@ export const Filtre: React.FunctionComponent<IFiltreProps> = ({ visning, onVisni
       </div>
 
       {!erStandard(visning) && (
-        <Button appearance="subtle" onClick={() => onVisning({ ...STANDARD_VISNING })}>
+        <Button appearance="subtle" onClick={() => onVisning(nulstilFiltre(visning))}>
           Nulstil
         </Button>
       )}
