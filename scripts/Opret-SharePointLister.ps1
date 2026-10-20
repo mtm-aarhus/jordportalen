@@ -97,6 +97,19 @@ function Write-Ny    { param([string]$Tekst) Write-Host "    + $Tekst" -Foregrou
 function Write-Har   { param([string]$Tekst) Write-Host "    = $Tekst" -ForegroundColor DarkGray }
 function Write-Advar { param([string]$Tekst) Write-Host "    ! $Tekst" -ForegroundColor Yellow }
 
+function Test-Kolonne {
+    <#
+        Findes kolonnen med dette INTERNE navn?
+
+        Get-PnPField -Identity matcher ogsaa visningsnavnet. Paa et dansk site har
+        den indbyggede, skjulte FileLeafRef visningsnavnet "Navn", og en importeret
+        kolonne kan hedde "Ansogning" med det interne navn field_1. Begge dele fik
+        scriptet til at tro, at kolonnen fandtes, og springe den over.
+    #>
+    param([string]$Liste, [string]$Navn)
+    [bool](Get-PnPField -List $Liste | Where-Object { $_.InternalName -eq $Navn })
+}
+
 function Confirm-Liste {
     <#  Opretter listen hvis den mangler. Returnerer $true hvis den er ny.  #>
     param(
@@ -135,7 +148,7 @@ function Add-Kolonne {
         [object]$Standard
     )
 
-    if (Get-PnPField -List $Liste -Identity $Navn -ErrorAction SilentlyContinue) {
+    if (Test-Kolonne -Liste $Liste -Navn $Navn) {
         Write-Har $Navn
         return
     }
@@ -200,7 +213,7 @@ function Add-Opslag {
         [Parameter(Mandatory)][string]$Navn
     )
 
-    if (Get-PnPField -List $Liste -Identity $Navn -ErrorAction SilentlyContinue) {
+    if (Test-Kolonne -Liste $Liste -Navn $Navn) {
         Write-Har $Navn
         return
     }
@@ -229,7 +242,8 @@ function Test-InterneNavne {
     param([string[]]$Lister)
 
     $problemer = 0
-    $indbyggede = @('Title', 'Created', 'Modified', 'Author', 'Editor', 'FileLeafRef', 'Attachments')
+    $indbyggede = @('Title', 'Created', 'Modified', 'Author', 'Editor', 'FileLeafRef', 'Attachments',
+                    'ContentType', '_ExtendedDescription')
 
     foreach ($navn in $Lister) {
         if (-not (Get-PnPList -Identity $navn -ErrorAction SilentlyContinue)) {
@@ -273,7 +287,9 @@ function Test-DanskeTegn {
         $felt = Get-PnPField -List $listeNavn -Identity $feltNavn -ErrorAction SilentlyContinue
         if (-not $felt) { continue }
 
-        $faktiske = $felt.Choices
+        # PnP 1.x indlaeser ikke Choices paa det felt, Get-PnPField returnerer, saa
+        # valgmulighederne laeses fra feltets XML i stedet.
+        $faktiske = @(([xml]$felt.SchemaXml).Field.CHOICES.CHOICE)
         foreach ($vaerdi in $forventet[$noegle]) {
             if ($faktiske -notcontains $vaerdi) {
                 $problemer++
