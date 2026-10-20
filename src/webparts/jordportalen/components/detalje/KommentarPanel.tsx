@@ -1,11 +1,9 @@
 import * as React from 'react';
 import {
   Button,
-  Card,
   MessageBar,
   Text,
   Textarea,
-  Title3,
   tokens,
 } from '@fluentui/react-components';
 
@@ -13,6 +11,7 @@ import { ILogPost, IPerson } from '../../domaene/typer';
 import { LogService } from '../../services/LogService';
 import { ProfilService } from '../../services/ProfilService';
 import { PeoplePicker } from '../faelles/PeoplePicker';
+import { Liste, ListeRaekke, MetaTekst, Panel } from '../faelles/Panel';
 
 export interface IKommentarPanelProps {
   sagId: number;
@@ -70,8 +69,7 @@ export const KommentarPanel: React.FunctionComponent<IKommentarPanelProps> = ({
   };
 
   return (
-    <Card style={{ padding: tokens.spacingVerticalM }}>
-      <Title3>Kommentarer</Title3>
+    <Panel titel="Kommentarer" antal={kommentarer.length}>
       {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
       {advarsel && <MessageBar intent="warning">{advarsel}</MessageBar>}
 
@@ -83,28 +81,35 @@ export const KommentarPanel: React.FunctionComponent<IKommentarPanelProps> = ({
           onChange={(_, d) => setTekst(d.value)}
         />
         <PeoplePicker profil={profil} valgte={taggede} onAendret={setTaggede} />
-        <Button appearance="primary" disabled={!tekst.trim() || arbejder} onClick={gem}>
+        <Button
+          appearance="primary"
+          disabled={!tekst.trim() || arbejder}
+          onClick={gem}
+          style={{ alignSelf: 'flex-end' }}
+        >
           Tilføj kommentar
         </Button>
       </div>
 
-      <div style={{ marginTop: tokens.spacingVerticalM }}>
+      <Liste tom="Ingen kommentarer endnu.">
         {kommentarer.map((k) => (
-          <div key={k.Id} style={{ marginBottom: tokens.spacingVerticalS }}>
-            <Text size={200} block>
-              {k.Author?.Title} · {new Date(k.Created).toLocaleString('da-DK')}
-            </Text>
-            <Text block style={{ whiteSpace: 'pre-wrap' }}>
-              {k.Kommentar}
-            </Text>
-            {k.TaggedeBrugere && k.TaggedeBrugere.length > 0 && (
-              <Text size={200} block>
-                Taggede: {k.TaggedeBrugere.map((t) => t.Title).join(', ')}
+          <ListeRaekke key={k.Id}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <MetaTekst>
+                <Text size={200} weight="semibold">{k.Author?.Title}</Text>
+                {' · '}
+                {new Date(k.Created).toLocaleString('da-DK')}
+              </MetaTekst>
+              <Text block style={{ whiteSpace: 'pre-wrap' }}>
+                {k.Kommentar}
               </Text>
-            )}
-          </div>
+              {k.TaggedeBrugere && k.TaggedeBrugere.length > 0 && (
+                <MetaTekst>Taggede: {k.TaggedeBrugere.map((t) => t.Title).join(', ')}</MetaTekst>
+              )}
+            </div>
+          </ListeRaekke>
         ))}
-      </div>
-    </Card>
+      </Liste>
+    </Panel>
   );
 };

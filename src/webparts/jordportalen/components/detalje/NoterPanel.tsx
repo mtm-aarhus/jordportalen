@@ -1,17 +1,15 @@
 import * as React from 'react';
 import {
   Button,
-  Caption1,
-  Card,
   MessageBar,
   Text,
   Textarea,
-  Title3,
   tokens,
 } from '@fluentui/react-components';
 
 import { INote } from '../../domaene/typer';
 import { NoteService } from '../../services/NoteService';
+import { Liste, ListeRaekke, MetaTekst, Panel } from '../faelles/Panel';
 
 export interface INoterPanelProps {
   sagId: number;
@@ -63,15 +61,14 @@ export const NoterPanel: React.FunctionComponent<INoterPanelProps> = ({
   });
 
   return (
-    <Card style={{ padding: tokens.spacingVerticalM }}>
-      <Title3>Egne noter</Title3>
-
-      {/*
-        Teksten siger bevidst "Vises kun for dig", ikke "Privat". Noterne
-        filtreres paa forfatter i selve forespoergslen, men listen har ingen
-        tilladelser pr. element - en administrator kan laese dem.
-      */}
-      <Caption1>Vises kun for dig. Ikke en del af sagens fælles historik.</Caption1>
+    // Teksten siger bevidst "Vises kun for dig", ikke "Privat". Noterne
+    // filtreres paa forfatter i selve forespoergslen, men listen har ingen
+    // tilladelser pr. element - en administrator kan laese dem.
+    <Panel
+      titel="Egne noter"
+      antal={noter.length}
+      undertekst="Vises kun for dig. Ikke en del af sagens fælles historik."
+    >
 
       {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
       {advarsel && <MessageBar intent="warning">{advarsel}</MessageBar>}
@@ -83,20 +80,20 @@ export const NoterPanel: React.FunctionComponent<INoterPanelProps> = ({
           disabled={arbejder}
           onChange={(_, d) => setTekst(d.value)}
         />
-        <Button disabled={!tekst.trim() || arbejder} onClick={gem}>
+        <Button disabled={!tekst.trim() || arbejder} onClick={gem} style={{ alignSelf: 'flex-end' }}>
           Gem note
         </Button>
       </div>
 
-      <div style={{ marginTop: tokens.spacingVerticalM }}>
+      <Liste tom="Ingen noter endnu.">
         {noter.map((n) => (
-          <div key={n.Id} style={{ marginBottom: tokens.spacingVerticalS }}>
-            <Text size={200} block>
-              {new Date(n.Created).toLocaleString('da-DK')}
-            </Text>
-            <Text block style={{ whiteSpace: 'pre-wrap' }}>
-              {n.Tekst}
-            </Text>
+          <ListeRaekke key={n.Id}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <MetaTekst>{new Date(n.Created).toLocaleString('da-DK')}</MetaTekst>
+              <Text block style={{ whiteSpace: 'pre-wrap' }}>
+                {n.Tekst}
+              </Text>
+            </div>
             <Button
               size="small"
               appearance="subtle"
@@ -105,9 +102,9 @@ export const NoterPanel: React.FunctionComponent<INoterPanelProps> = ({
             >
               Slet
             </Button>
-          </div>
+          </ListeRaekke>
         ))}
-      </div>
-    </Card>
+      </Liste>
+    </Panel>
   );
 };

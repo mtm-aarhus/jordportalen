@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, MessageBar, Spinner, tokens } from '@fluentui/react-components';
+import { Button, makeStyles, MessageBar, Spinner, tokens } from '@fluentui/react-components';
 
 import { SagService } from '../../services/SagService';
 import { LogService } from '../../services/LogService';
@@ -63,6 +63,36 @@ export interface ISagDetaljeProps {
   onTilbage: () => void;
 }
 
+const useStyles = makeStyles({
+  // To kolonner: fakta om sagen til venstre, arbejdet med sagen til hoejre.
+  // Hoejre kolonne vokser dobbelt saa hurtigt; i en smal kolonne brydes de
+  // til én under hinanden.
+  kolonner: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+    gap: tokens.spacingHorizontalXL,
+  },
+  fakta: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: '320px',
+    minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalL,
+  },
+  arbejde: {
+    flexGrow: 2,
+    flexShrink: 1,
+    flexBasis: '480px',
+    minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalL,
+  },
+});
+
 export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
   sagId,
   tjenester,
@@ -70,6 +100,7 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
   delingsLink,
   onTilbage,
 }) => {
+  const styles = useStyles();
   const [data, setData] = React.useState<ISagData | undefined>(undefined);
   const [fejl, setFejl] = React.useState<string | undefined>(undefined);
 
@@ -186,8 +217,8 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
     <div>
       <SagHoved sag={data.sag} delingsLink={delingsLink} onTilbage={onTilbage} />
 
-      <div style={{ display: 'flex', gap: tokens.spacingHorizontalL, flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 380px', minWidth: '320px' }}>
+      <div className={styles.kolonner}>
+        <div className={styles.fakta}>
           <AnsvarligKort
             sag={data.sag}
             profil={data.ansvarligProfil}
@@ -196,7 +227,6 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
             onFrigiv={() => tjenester.sag.frigivSag(data.sag, brugerId)}
             onOpdateret={hentAlt}
           />
-          <div style={{ height: tokens.spacingVerticalM }} />
           <Metadata
             sag={data.sag}
             adresser={data.adresser}
@@ -205,50 +235,48 @@ export const SagDetalje: React.FunctionComponent<ISagDetaljeProps> = ({
           />
         </div>
 
-        <div style={{ flex: '1 1 420px', minWidth: '320px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalM }}>
-            <StatusPanel
-              sag={data.sag}
-              sagService={tjenester.sag}
-              brugerId={brugerId}
-              onOpdateret={hentAlt}
-            />
-            <KommentarPanel
-              sagId={sagId}
-              logposter={data.logposter}
-              logService={tjenester.log}
-              profil={tjenester.profil}
-              onOpdateret={() => opdater('logposter')}
-            />
-            <NoterPanel
-              sagId={sagId}
-              noter={data.noter}
-              noteService={tjenester.note}
-              onOpdateret={() => opdater('noter')}
-            />
-            <OpgavePanel
-              sagId={sagId}
-              opgaver={data.opgaver}
-              opgaveService={tjenester.opgave}
-              onOpdateret={() => opdater('opgaver')}
-              onHistorikOpdateret={() => opdater('logposter')}
-            />
-            <DokumentPanel
-              sagId={sagId}
-              dokumenter={data.dokumenter}
-              dokumentService={tjenester.dokument}
-              onOpdateret={() => opdater('dokumenter')}
-              onHistorikOpdateret={() => opdater('logposter')}
-            />
-            <LinkPanel
-              sagId={sagId}
-              links={data.links}
-              linkService={tjenester.link}
-              onOpdateret={() => opdater('links')}
-              onHistorikOpdateret={() => opdater('logposter')}
-            />
-            <HistorikPanel logposter={data.logposter} />
-          </div>
+        <div className={styles.arbejde}>
+          <StatusPanel
+            sag={data.sag}
+            sagService={tjenester.sag}
+            brugerId={brugerId}
+            onOpdateret={hentAlt}
+          />
+          <KommentarPanel
+            sagId={sagId}
+            logposter={data.logposter}
+            logService={tjenester.log}
+            profil={tjenester.profil}
+            onOpdateret={() => opdater('logposter')}
+          />
+          <NoterPanel
+            sagId={sagId}
+            noter={data.noter}
+            noteService={tjenester.note}
+            onOpdateret={() => opdater('noter')}
+          />
+          <OpgavePanel
+            sagId={sagId}
+            opgaver={data.opgaver}
+            opgaveService={tjenester.opgave}
+            onOpdateret={() => opdater('opgaver')}
+            onHistorikOpdateret={() => opdater('logposter')}
+          />
+          <DokumentPanel
+            sagId={sagId}
+            dokumenter={data.dokumenter}
+            dokumentService={tjenester.dokument}
+            onOpdateret={() => opdater('dokumenter')}
+            onHistorikOpdateret={() => opdater('logposter')}
+          />
+          <LinkPanel
+            sagId={sagId}
+            links={data.links}
+            linkService={tjenester.link}
+            onOpdateret={() => opdater('links')}
+            onHistorikOpdateret={() => opdater('logposter')}
+          />
+          <HistorikPanel logposter={data.logposter} />
         </div>
       </div>
     </div>

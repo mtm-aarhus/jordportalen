@@ -1,26 +1,45 @@
 import * as React from 'react';
-import { Card, Text, Title3, tokens } from '@fluentui/react-components';
+import { makeStyles, Text } from '@fluentui/react-components';
 import { ILogPost } from '../../domaene/typer';
+import { Liste, ListeRaekke, MetaTekst, Panel } from '../faelles/Panel';
 
 export interface IHistorikPanelProps {
   logposter: ILogPost[];
 }
 
-export const HistorikPanel: React.FunctionComponent<IHistorikPanelProps> = ({ logposter }) => (
-  <Card style={{ padding: tokens.spacingVerticalM }}>
-    <Title3>Historik</Title3>
-    <div style={{ maxHeight: '420px', overflowY: 'auto' }}>
-      {logposter.map((l) => (
-        <div key={l.Id} style={{ marginBottom: tokens.spacingVerticalS }}>
-          <Text size={200} block>
-            {new Date(l.Created).toLocaleString('da-DK')} · {l.Author?.Title}
-          </Text>
-          <Text block weight="semibold">
-            {l.Handling}
-          </Text>
-          <Text block>{l.Title}</Text>
-        </div>
-      ))}
-    </div>
-  </Card>
-);
+const useStyles = makeStyles({
+  rul: {
+    maxHeight: '420px',
+    overflowY: 'auto',
+  },
+  indhold: {
+    display: 'flex',
+    flexDirection: 'column',
+    minWidth: 0,
+  },
+});
+
+export const HistorikPanel: React.FunctionComponent<IHistorikPanelProps> = ({ logposter }) => {
+  const styles = useStyles();
+  return (
+    <Panel titel="Historik" antal={logposter.length}>
+      <div className={styles.rul}>
+        <Liste tom="Ingen hændelser endnu.">
+          {logposter.map((l) => (
+            <ListeRaekke key={l.Id}>
+              <div className={styles.indhold}>
+                <MetaTekst>
+                  {new Date(l.Created).toLocaleString('da-DK')} · {l.Author?.Title}
+                </MetaTekst>
+                <Text block weight="semibold">
+                  {l.Handling}
+                </Text>
+                <Text block>{l.Title}</Text>
+              </div>
+            </ListeRaekke>
+          ))}
+        </Liste>
+      </div>
+    </Panel>
+  );
+};
