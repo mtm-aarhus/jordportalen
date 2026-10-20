@@ -10,9 +10,14 @@ import { validerStatusskift } from '../domaene/statusregler';
 import { skrivMedEtag } from '../domaene/samtidighed';
 import { INyLogPost, LogService } from './LogService';
 
-/** Kun de felter dashboardet viser. Detaljerne hentes foerst naar en sag aabnes. */
+/**
+ * Kun de felter dashboardet viser (tabellen og kanban-kortene). Adresser,
+ * kontakter og historik hentes foerst, naar en sag aabnes.
+ */
 const OVERSIGT_FELTER =
-  'Id,Title,SubmissionSerial,Status,AfventerAarsag,ModtagetDato,AdresserTekst,Grundejere,AnsvarligId';
+  'Id,Title,SubmissionSerial,Status,AfventerAarsag,ModtagetDato,AnsogningsDato,AdresserTekst,' +
+  'Grundejere,AnsvarligId,Udfylder,IndsendtAf,Bemaerkninger,FlereGrundejere,AntalAdresser,' +
+  'AntalKontakter,AntalVedhaeftninger';
 
 const SAG_FELTER =
   'Id,Title,SubmissionUUID,SubmissionSerial,SubmissionSid,OS2FormsUrl,Udfylder,IndsendtAf,' +

@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { Button, Card, Link, MessageBar, Text, Title3, tokens } from '@fluentui/react-components';
+import { Button, Link, MessageBar } from '@fluentui/react-components';
 import { IDokument } from '../../domaene/typer';
 import { DokumentService } from '../../services/DokumentService';
+import { Liste, ListeRaekke, MetaTekst, Panel } from '../faelles/Panel';
 
 export interface IDokumentPanelProps {
   sagId: number;
@@ -63,28 +64,38 @@ export const DokumentPanel: React.FunctionComponent<IDokumentPanelProps> = ({
   };
 
   return (
-    <Card style={{ padding: tokens.spacingVerticalM }}>
-      <Title3>Dokumenter</Title3>
+    <Panel titel="Dokumenter" antal={dokumenter.length}>
       {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
       {advarsel && <MessageBar intent="warning">{advarsel}</MessageBar>}
 
+      {/* Browserens eget filfelt er skjult; knappen aabner det. */}
       <input
         ref={filInput}
         type="file"
+        hidden
         disabled={arbejder}
         onChange={(e) => {
           const fil = e.target.files?.[0];
           if (fil) { upload(fil).catch(() => undefined); }
         }}
       />
+      <Button
+        disabled={arbejder}
+        onClick={() => filInput.current?.click()}
+        style={{ alignSelf: 'flex-start' }}
+      >
+        Upload dokument
+      </Button>
 
-      <div style={{ marginTop: tokens.spacingVerticalM }}>
+      <Liste tom="Ingen dokumenter endnu.">
         {dokumenter.map((d) => (
-          <div key={d.Id} style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS }}>
-            <Link href={d.ServerRelativeUrl} target="_blank">
-              {d.Filnavn}
-            </Link>
-            <Text size={200}>{new Date(d.Modified).toLocaleDateString('da-DK')}</Text>
+          <ListeRaekke key={d.Id}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Link href={d.ServerRelativeUrl} target="_blank">
+                {d.Filnavn}
+              </Link>
+              <MetaTekst>Ændret {new Date(d.Modified).toLocaleDateString('da-DK')}</MetaTekst>
+            </div>
             <Button
               size="small"
               appearance="subtle"
@@ -93,9 +104,9 @@ export const DokumentPanel: React.FunctionComponent<IDokumentPanelProps> = ({
             >
               Slet
             </Button>
-          </div>
+          </ListeRaekke>
         ))}
-      </div>
-    </Card>
+      </Liste>
+    </Panel>
   );
 };

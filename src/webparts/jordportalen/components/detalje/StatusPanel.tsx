@@ -1,12 +1,10 @@
 import * as React from 'react';
 import {
   Button,
-  Card,
   Dropdown,
   MessageBar,
   Option,
   Textarea,
-  Title3,
   tokens,
 } from '@fluentui/react-components';
 
@@ -14,6 +12,7 @@ import { naeste } from '../../domaene/statusregler';
 import { AfventerAarsag, ALLE_AARSAGER, ISag, SagStatus } from '../../domaene/typer';
 import { SagService } from '../../services/SagService';
 import { useMountNode } from '../faelles/MountNode';
+import { Panel } from '../faelles/Panel';
 
 export interface IStatusPanelProps {
   sag: ISag;
@@ -75,8 +74,7 @@ export const StatusPanel: React.FunctionComponent<IStatusPanelProps> = ({
   };
 
   return (
-    <Card style={{ padding: tokens.spacingVerticalM }}>
-      <Title3>Status</Title3>
+    <Panel titel="Skift status">
       {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
       {advarsel && <MessageBar intent="warning">{advarsel}</MessageBar>}
 
@@ -135,11 +133,16 @@ export const StatusPanel: React.FunctionComponent<IStatusPanelProps> = ({
             onChange={(_, d) => setKommentar(d.value)}
           />
 
-          <Button appearance="primary" disabled={!erMin || !nyStatus || arbejder} onClick={gem}>
+          <Button
+            appearance="primary"
+            disabled={!erMin || !nyStatus || arbejder}
+            onClick={gem}
+            style={{ alignSelf: 'flex-end' }}
+          >
             Skift status
           </Button>
         </div>
       )}
-    </Card>
+    </Panel>
   );
 };

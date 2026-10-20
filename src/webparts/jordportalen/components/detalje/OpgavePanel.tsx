@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { Button, Card, Checkbox, Input, MessageBar, Title3, tokens } from '@fluentui/react-components';
+import { Button, Checkbox, Input, MessageBar, tokens } from '@fluentui/react-components';
 import { IOpgave } from '../../domaene/typer';
 import { OpgaveService } from '../../services/OpgaveService';
+import { Liste, ListeRaekke, Panel } from '../faelles/Panel';
 
 export interface IOpgavePanelProps {
   sagId: number;
@@ -53,8 +54,15 @@ export const OpgavePanel: React.FunctionComponent<IOpgavePanelProps> = ({
   };
 
   return (
-    <Card style={{ padding: tokens.spacingVerticalM }}>
-      <Title3>Opgaver</Title3>
+    <Panel
+      titel="Opgaver"
+      antal={opgaver.length}
+      undertekst={
+        opgaver.length > 0
+          ? `${opgaver.filter((o) => o.Udfoert).length} af ${opgaver.length} udført`
+          : undefined
+      }
+    >
       {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
       {advarsel && <MessageBar intent="warning">{advarsel}</MessageBar>}
 
@@ -77,14 +85,20 @@ export const OpgavePanel: React.FunctionComponent<IOpgavePanelProps> = ({
         </Button>
       </div>
 
-      <div style={{ marginTop: tokens.spacingVerticalM }}>
+      <Liste tom="Ingen opgaver endnu.">
         {opgaver.map((o) => (
-          <div key={o.Id} style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS }}>
+          <ListeRaekke key={o.Id}>
             <Checkbox
               checked={o.Udfoert}
               label={o.Title}
               disabled={arbejder}
               onChange={(_, d) => koer(() => opgaveService.saetUdfoert(o, !!d.checked))}
+              style={{
+                flex: 1,
+                minWidth: 0,
+                color: o.Udfoert ? tokens.colorNeutralForeground3 : undefined,
+                textDecorationLine: o.Udfoert ? 'line-through' : undefined,
+              }}
             />
             <Button
               size="small"
@@ -93,9 +107,9 @@ export const OpgavePanel: React.FunctionComponent<IOpgavePanelProps> = ({
             >
               Slet
             </Button>
-          </div>
+          </ListeRaekke>
         ))}
-      </div>
-    </Card>
+      </Liste>
+    </Panel>
   );
 };

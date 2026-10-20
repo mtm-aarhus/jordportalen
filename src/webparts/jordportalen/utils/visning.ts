@@ -16,8 +16,10 @@
 import {
   ALLE_HVEM,
   ALLE_UDVALG,
+  ALLE_LAYOUTS,
   Hvem,
   IVisning,
+  Layout,
   STANDARD_VISNING,
   Udvalg,
 } from '../domaene/dashboard';
@@ -26,7 +28,8 @@ const P_SAG = 'sag';
 const P_STATUS = 'status';
 const P_HVEM = 'hvem';
 const P_SOEG = 'q';
-const EGNE_PARAMETRE = [P_SAG, P_STATUS, P_HVEM, P_SOEG];
+const P_VIS = 'vis';
+const EGNE_PARAMETRE = [P_SAG, P_STATUS, P_HVEM, P_SOEG, P_VIS];
 
 const LEGACY_HASH = /#sag-(\d+)\b/;
 
@@ -65,6 +68,8 @@ export function laesVisning(url: string): IVisning {
     udvalg: blandt<Udvalg>(hent(P_STATUS), ALLE_UDVALG, STANDARD_VISNING.udvalg),
     hvem: blandt<Hvem>(hent(P_HVEM), ALLE_HVEM, STANDARD_VISNING.hvem),
     soeg: hent(P_SOEG) ?? '',
+    // Tabel er standard og skrives aldrig, saa kun kanban giver en vaerdi.
+    layout: blandt<Layout>(hent(P_VIS), ALLE_LAYOUTS, 'tabel') === 'kanban' ? 'kanban' : undefined,
   };
 }
 
@@ -85,6 +90,9 @@ export function byggUrl(basisUrl: string, visning: IVisning): string {
   }
   if (visning.soeg.trim() !== '') {
     parametre.set(P_SOEG, visning.soeg);
+  }
+  if (visning.layout === 'kanban') {
+    parametre.set(P_VIS, 'kanban');
   }
   if (visning.sag !== undefined) {
     parametre.set(P_SAG, String(visning.sag));

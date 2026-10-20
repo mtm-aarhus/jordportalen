@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { Button, Card, Input, Link, MessageBar, Text, Title3, tokens } from '@fluentui/react-components';
+import { Button, Input, Link, MessageBar, Text, tokens } from '@fluentui/react-components';
 import { ILink } from '../../domaene/typer';
 import { sikkerUrl } from '../../domaene/sikkerhed';
 import { LinkService } from '../../services/LinkService';
+import { Liste, ListeRaekke, Panel } from '../faelles/Panel';
 
 export interface ILinkPanelProps {
   sagId: number;
@@ -63,8 +64,7 @@ export const LinkPanel: React.FunctionComponent<ILinkPanelProps> = ({
   }, true);
 
   return (
-    <Card style={{ padding: tokens.spacingVerticalM }}>
-      <Title3>Links</Title3>
+    <Panel titel="Links" antal={links.length}>
       {fejl && <MessageBar intent="error">{fejl}</MessageBar>}
       {advarsel && <MessageBar intent="warning">{advarsel}</MessageBar>}
 
@@ -81,23 +81,25 @@ export const LinkPanel: React.FunctionComponent<ILinkPanelProps> = ({
           disabled={arbejder}
           onChange={(_, d) => setUrl(d.value)}
         />
-        <Button disabled={!gyldig || arbejder} onClick={gem}>
+        <Button disabled={!gyldig || arbejder} onClick={gem} style={{ alignSelf: 'flex-end' }}>
           Tilføj link
         </Button>
       </div>
 
-      <div style={{ marginTop: tokens.spacingVerticalM }}>
+      <Liste tom="Ingen links endnu.">
         {links.map((l) => {
           const href = sikkerUrl(l.Url?.Url);
           return (
-            <div key={l.Id} style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS }}>
-              {href ? (
-                <Link href={href} target="_blank">
-                  {l.Title}
-                </Link>
-              ) : (
-                <Text>{l.Title}</Text>
-              )}
+            <ListeRaekke key={l.Id}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {href ? (
+                  <Link href={href} target="_blank">
+                    {l.Title}
+                  </Link>
+                ) : (
+                  <Text>{l.Title}</Text>
+                )}
+              </div>
               <Button
                 size="small"
                 appearance="subtle"
@@ -106,10 +108,10 @@ export const LinkPanel: React.FunctionComponent<ILinkPanelProps> = ({
               >
                 Slet
               </Button>
-            </div>
+            </ListeRaekke>
           );
         })}
-      </div>
-    </Card>
+      </Liste>
+    </Panel>
   );
 };

@@ -10,6 +10,7 @@ import { erAfsluttet } from './statusregler';
 
 export type Udvalg = 'aktive' | 'afsluttede' | 'alle' | SagStatus;
 export type Hvem = 'alle' | 'ledige' | 'mine';
+export type Layout = 'tabel' | 'kanban';
 
 export interface IVisning {
   /** Aaben sag. Udeladt betyder dashboardet. */
@@ -17,12 +18,20 @@ export interface IVisning {
   udvalg: Udvalg;
   hvem: Hvem;
   soeg: string;
+  /** Tabel eller kanban. Udeladt betyder tabel. Et visningsvalg, ikke et filter. */
+  layout?: Layout;
 }
 
 export const STANDARD_VISNING: IVisning = { udvalg: 'aktive', hvem: 'alle', soeg: '' };
 
 export const ALLE_UDVALG: readonly Udvalg[] = ['aktive', 'afsluttede', 'alle', ...ALLE_STATUS];
 export const ALLE_HVEM: readonly Hvem[] = ['alle', 'ledige', 'mine'];
+export const ALLE_LAYOUTS: readonly Layout[] = ['tabel', 'kanban'];
+
+/** Filtrene til standard. Layoutet er et valg af visning og bliver staaende. */
+export function nulstilFiltre(visning: IVisning): IVisning {
+  return { ...STANDARD_VISNING, layout: visning.layout };
+}
 
 function iUdvalg(s: ISag, udvalg: Udvalg): boolean {
   switch (udvalg) {
@@ -97,18 +106,18 @@ export function taelNoegletal(sager: ISag[], brugerId: number): INoegletal {
 export type Kort = 'aktive' | 'ledige' | 'mine' | 'afventer';
 export const ALLE_KORT: readonly Kort[] = ['aktive', 'ledige', 'mine', 'afventer'];
 
-/** Visningen et klik paa kortet giver. Soegningen bevares. */
+/** Visningen et klik paa kortet giver. Soegningen og layoutet bevares. */
 export function kortGenvej(kort: Kort, visning: IVisning): IVisning {
-  const soeg = visning.soeg;
+  const { soeg, layout } = visning;
   switch (kort) {
     case 'ledige':
-      return { udvalg: 'aktive', hvem: 'ledige', soeg };
+      return { udvalg: 'aktive', hvem: 'ledige', soeg, layout };
     case 'mine':
-      return { udvalg: 'aktive', hvem: 'mine', soeg };
+      return { udvalg: 'aktive', hvem: 'mine', soeg, layout };
     case 'afventer':
-      return { udvalg: 'Afventer', hvem: 'alle', soeg };
+      return { udvalg: 'Afventer', hvem: 'alle', soeg, layout };
     default:
-      return { udvalg: 'aktive', hvem: 'alle', soeg };
+      return { udvalg: 'aktive', hvem: 'alle', soeg, layout };
   }
 }
 
@@ -125,4 +134,29 @@ export function erStandard(visning: IVisning): boolean {
     visning.hvem === STANDARD_VISNING.hvem &&
     visning.soeg.trim() === ''
   );
+}
+
+export interface IKanbanKolonne {
+  status: SagStatus;
+  sager: ISag[];
+}
+
+/**
+ * Kanban-kolonnerne for de (allerede filtrerede) sager.
+ *
+ * Kolonnerne foelger udvalget, ogsaa naar en kolonne er tom, saa tavlen
+ * ikke skifter form, mens man filtrerer. En status, koden ikke kender (fx et
+ * nyt valg tilfoejet i SharePoint), faar sin egen kolonne til sidst i stedet
+ * for at sagen forsvinder fra tavlen.
+ */
+export function kanbanKolonner(sager: ISag[], udvalg: Udvalg): IKanbanKolonne[] {
+  const statusser: SagStatus[] = ALLE_STATUS.filter((status) =>
+    iUdvalg({ Status: status } as ISag, udvalg)
+  );
+  sager.forEach((s) => {
+    if (statusser.indexOf(s.Status) === -1) {
+      statusser.push(s.Status);
+    }
+  });
+  return statusser.map((status) => ({ status, sager: sager.filter((s) => s.Status === status) }));
 }

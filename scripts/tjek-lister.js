@@ -229,5 +229,24 @@
   if (!fejl.length && !advarsler.length) {
     console.log('%cAlt stemmer med det forventede skema.', 'color:#080;font-weight:bold');
   }
+
+  // Tabellerne er svære at kopiere ud af konsollen. Samme resultat som ren
+  // tekst i udklipsholderen, så det kan indsættes direkte.
+  const linjer = [
+    `Tjek af ${SITE}`,
+    `Tidszone: ${tzNavn}`,
+    `${fejl.length} fejl:`,
+    ...fejl.map((f) => `  FEJL  ${f.sted}: ${f.besked}`),
+    `${advarsler.length} advarsler:`,
+    ...advarsler.map((a) => `  ADVAR ${a.sted}: ${a.besked}`),
+  ];
+  const resultat = linjer.join('\n');
+  try {
+    // copy() findes kun i DevTools-konsollen.
+    copy(resultat);
+    console.log('%cResultatet er kopieret til udklipsholderen.', 'color:#080;font-weight:bold');
+  } catch {
+    console.log(resultat);
+  }
   return { fejl, advarsler };
 })();
